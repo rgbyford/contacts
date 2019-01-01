@@ -1,0 +1,35 @@
+{
+  "name": "toby2",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node server.js",
+    "lint": "eslint **/*.js --quiet",
+    "fix": "eslint --fix .",
+    "test": "npm run lint && set NODE_ENV=test && mocha -u tdd --reporter spec --exit"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rgbyford/toby2.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/rgbyford/toby2/issues"
+  },
+  "homepage": "https://github.com/rgbyford/toby2#readme",
+  "dependencies": {
+    "all": "0.0.0",
+    "client-oauth2": "^4.2.3",
+    "contacts-api-node": "^2.0.3",
+    "express": "^4.16.4",
+    "express-handlebars": "^3.0.0",
+    "mongodb": "^3.1.10",
+    "fs": "0.0.1-security",
+    "multer": "^1.4.1",
+    "node-fetch": "^2.3.0",
+    "papaparse": "^4.6.2",
+    "path": "^0.12.7"
+  }
+}
