@@ -36,6 +36,7 @@ router.get("/contacts", function (req, res) {
     asPrev.forEach((element, i) => {
         asPrev[i] = "";
     });
+    iAnds = -1;
     //    asPrev = "";
     console.log("get contacts");
     renderContacts(res);
@@ -69,7 +70,7 @@ router.put("/contacts/import", uploadMulter.single("avatar"), function (req, res
     // req.file.originalname gives the client file name
     // console.log("body: ", req.body);
     cjFns.csvJson(req.file.filename);
-    res.render("index", {});
+    //    res.render("index", {});
 });
 
 let asValues = [];
@@ -160,7 +161,7 @@ router.post("/contacts/select", function (req, res) {
                 break;
         }
         /* eslint-enable indent*/
-        console.log("cs: ", asPrev);
+        //console.log("cs: ", asPrev);
         res.render("index", {
             cats11: asCats11,
             cats12: asCats12,
@@ -187,12 +188,12 @@ function setPrevious() {
     asPrev[iAnds] = "";
     for (let i = 0; i < asValues.length; i++) {
         if (asValues[i] !== undefined) {
-            console.log(`asV${i}: ${asValues[i]}`);
+            //console.log(`asV${i}: ${asValues[i]}`);
             asPrev[iAnds] += asValues[i] + " ";
         }
         asValues[i] = "";
     }
-    console.log("ca AND: ", asPrev);
+    //console.log("ca AND: ", asPrev);
 }
 
 router.post("/contacts/and", function (req, res) {
@@ -200,18 +201,17 @@ router.post("/contacts/and", function (req, res) {
     res.redirect("/contacts/and");
 });
 
-let sLocIntl = "any";
-let sLocUSA = "any";
-let asFound = [];
-
 router.post("/contacts/search", async function (req, res) {
     //    console.log ("search:", req.body.string);
     //    let oButtonInput = JSON.parse(req.body);
     //    console.log("oBI: ", oButtonInput);
 
-    let sSearch;
+    //let sSearch;
 
     setPrevious();
+    //console.log ("asP0: ", asPrev[0]);
+    //console.log ("asP1: ", asPrev[1]);
+    //console.log ("asPLen: ", asPrev.length);
     iAnds = -1;
     //console.log("asPx: ", asPrev);
     //asP:  [ 'pp', ' 1 ace ' ]
@@ -232,7 +232,8 @@ router.post("/contacts/search", async function (req, res) {
     // } else {
     //     sSearch = "{$all: ["; // ['x']
     // }
-    let asSearch = [];
+    let asSearchAnd = [];
+    let asSearchOr = [];
 
     //sSearch = "{$all: [";
     //console.log("Search string beginning: ", sSearch);
@@ -241,28 +242,33 @@ router.post("/contacts/search", async function (req, res) {
         // trim
         sFind = sFind.trim();
         // split by " "
-        asFinds = sFind.split(" ");
+        let asFinds = sFind.split(" ");
         if (asFinds.length > 1) { //['x y']
             //console.log("asF len: ", asFinds.length);
             asFinds.forEach((sCat, j) => {
                 // console.log ("sCat: ", sCat);
-                // if (j === 0 && sCat[0] !== ".") {
-                //     console.log ("prepending .");
-                //     // have to take this out when the database is reloaded
-                //     sCat = "." + sCat;
-                // }
-                //                sSearch += "$eq: " + sCat; // first: {$and{$eq: x}  second: {$and{{$eq: x}, {$eq: y}}}
-                //sSearch += `"${sCat}"`;
-                asSearch.push(sCat);
-                if (j === asFinds.length - 1) {
-                    sSearch += "]}"; // close out
+                // have to look for x,y as an OR
+                let asFindCommas = sCat.split(",");
+                if (asFindCommas.length > 1) {
+                    // there's an OR
+                    //console.log ("asFC", asFindCommas);     // correct
+                    asFindCommas.forEach((sCatOr, k) => {
+                        asSearchOr.push(sCatOr);
+                    });
                 } else {
-                    sSearch += ", "; // another to come
+                    if (sCat !== "any") {
+                        asSearchAnd.push(sCat);
+                    }
+                    // if (j === asFinds.length - 1) {
+                    //     sSearch += "]}"; // close out
+                    // } else {
+                    //     sSearch += ", "; // another to come
+                    // }
+                    //console.log("Search string: ", sSearch);
                 }
-                console.log("Search string: ", sSearch);
             });
         } else {
-            asSearch.push(asFinds[0]);
+            asSearchAnd.push(asFinds[0]);
         }
     });
     // try splitting each sub-array by ','
@@ -275,10 +281,12 @@ router.post("/contacts/search", async function (req, res) {
     // if last asPrev, add "} to search string.  Else add ", "
     // end for each asPrev.  Go around, 
 
-    //console.log ("asSearch: ", asSearch);
-    dbConn.queryDB(asSearch).then (function(asFound) {
+    //console.log ("asSearchAnd: ", asSearchAnd);
+    console.log ("asPrev: ", asPrev);
+    dbConn.queryDB(asSearchAnd, asSearchOr).then(function (asFound) {
         //console.log("asFound: ", asFound);
         res.render("index", {
+            asPrevSearch: asPrev,
             asFound: asFound
         });
     });

@@ -1,9 +1,11 @@
-<input onchange='importFile(event)' type="file" id="files" name="files[]" multiple>
+<p>CSV file to upload to database:</p>
+<input onchange='importFile(event)' type="file" id="files" name="files[]">
 <form>
     <br>
+    <h3>Search contacts</h3>
     {{#unless search}}
     {{#each asPrev}}
-    <p class="previous">{{this}} {{#if this}}AND{{/if}}</p>
+    <p class="previous">{{this}} {{#unless @last}}AND{{/unless}}</p>
     {{/each}}
     {{#if cats11Done}}
     <p> Category chosen: {{cats11}}</p>
@@ -52,7 +54,17 @@
     <p class="previous">{{this}} {{#unless @last}}AND{{/unless}}</p>
     {{/each}}
     {{/if}}
+    <br>
+    {{#each asPrevSearch}}
+    {{#if @first}}
+    <h4>Searched for: </h4>
+    {{/if}}
+    <p>{{this}} {{#unless @last}}AND{{/unless}}</p>
+    {{/each}}
     {{#each asFound}}
+    {{#if @first}}
+     <h3> Search results: </h3>
+    {{/if}}
     <p class="previous">{{this.GivenName}} {{this.FamilyName}}</p>
     {{/each}}
 

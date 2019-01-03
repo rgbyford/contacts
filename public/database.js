@@ -1,8 +1,5 @@
 const connFns = require("../config/connection.js");
 var contactRef;
-var aoDocs;
-var aoDocsFinal;
-var query;
 
 class AoCats {
     constructor(sCat, asSubCat) {

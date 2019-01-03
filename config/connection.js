@@ -1,35 +1,34 @@
 /* eslint-disable brace-style */
 const MongoClient = require("mongodb").MongoClient;
-const routes = require("../routes/routes.js");
-//const test = require("assert");
-// Connection url
 const dbName = "toby";
-const MONGODB_URI = process.env.MONGODB_URI || `mongodb://localhost/${dbName}`;
+//const MONGODB_URI = process.env.MONGODB_URI || `mongodb://localhost/${dbName}`;
 let dbToby;
-//let asFound = [];
-//let db;
+const url = "mongodb://localhost:27017";
+
 // Connect using MongoClient
-MongoClient.connect(MONGODB_URI, function (err, db) {
+//MongoClient.connect(MONGODB_URI, function (err, db) {
+MongoClient.connect(url, function (err, client) {
     if (err) {
         throw err;
     }
-    //    dbToby = db;then(function () {
-    //    console.log(db);
-    dbToby = db;
+    dbToby = client.db (dbName);
     dbToby.stats().then(function (res) {
         console.log("Connected to database: ", res);
     });
 });
 
-// module.exports.getFoundItems = function () {
-//     return (asFound);
-// };
-
-module.exports.queryDB = async function (asSearch) {
+module.exports.queryDB = async function (asSearchAnd, asSearchOr) {
+    //console.log ("asSAnd: ", asSearchAnd);
+    //console.log ("asSOr: ", asSearchOr);
     return new Promise((resolve, reject) => {
+        if (asSearchOr.length === 0) {
+            // generates an error
+            asSearchOr[0] = asSearchAnd[0];
+        }
         const cursor = dbToby.collection("contacts").find({
             GroupMembership: {
-                $all: asSearch
+                $all: asSearchAnd,
+                $in: asSearchOr
             }
         }).project({
             GivenName: 1,
@@ -75,52 +74,8 @@ function insertContactCallback(err, res) {
 module.exports.insertContact = function (oContact) {
     dbToby.collection("contacts").updateOne({
         "E-mail1-Value": oContact["E-mail1-Value"]
-    }, oContact, {
+    }, {$set: oContact}, {
         upsert: true
     }, insertContactCallback);
     return;
 };
-
-//     let dbContact = new Contact(oContact);
-//     console.log("insertContact link: ", dbContact.link);
-//     // if it is in already saved, do an update to the note.
-//     // otherwise do an insert
-//     let notSaved = true;
-//     for (let j = 0; j < aoAlreadySaved.length; j++) { // check if already saved
-//         if (aoAlreadySaved[j].link === oContact.link) { //not headlines because they change!
-//             notSaved = false;
-//             break;
-//         }
-//     }
-
-//     if (notSaved) { // insert
-//         // console.log("Not here - add to AlreadySaved");
-//         aoAlreadySaved.push(oContact);
-//         dbContact.save(function (err) {
-//             if (err) {
-//                 return console.error(err);
-//             }
-//             //            console.log(dbContact);
-//         });
-//     } else {
-//         // console.log("Already here - update");
-//         // console.log("Note: ", oContact.note);
-//         let conditions = {
-//             link: oContact.link
-//         };
-//         let update = {
-//             $set: {
-//                 note: oContact.note
-//             }
-//         };
-//         let options = {
-//             multi: false
-//         };
-//         Contact.update(conditions, update, options, udCallback);
-//     }
-// }
-
-// function udCallback(err, numAffected) {
-//     console.log("udC err: ", err);
-//     console.log("udC updated count: ", numAffected);
-// }
