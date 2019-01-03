@@ -2,7 +2,7 @@ let express = require("express");
 let router = express.Router();
 const cjFns = require("../public/csvjson.js");
 const dbFunctions = require("../public/database.js");
-const dbConn = require ("../config/connection.js");
+const dbConn = require("../config/connection.js");
 let aoCats = [{}];
 let asPrev = [];
 let iAnds = -1;
@@ -83,11 +83,11 @@ router.post("/contacts/select", function (req, res) {
     let asCats14 = [];
     let bCats12Done = false;
     let bCats11Done = false;
-    console.log("cs ", req.body.sId, req.body.sValue);
+    //console.log("cs ", req.body.sId, req.body.sValue);
     //    bAndBtnDisabled = req.body.sValue.length > 1;
     let bDone = (typeof (req.body.sValue) !== "string") && (req.body.sValue.length > 1);
     //    let bDone = req.body.sValue.length > 1;
-    console.log("bDone: ", bDone);
+    //console.log("bDone: ", bDone);
     //bDone = false;
     // disable the AND button until Next is hit
     //    bAndBtnDisabled = true;
@@ -102,7 +102,7 @@ router.post("/contacts/select", function (req, res) {
         asCats = asCats.filter(v => v !== "");
         asCats = asCats.sort();
         asCats.unshift("any");
-        console.log("asC: ", asCats, " ", asCats.length);
+        //console.log("asC: ", asCats, " ", asCats.length);
         bAndBtnDisabled = asCats.length > 2;
     } else {
         bAndBtnDisabled = false;
@@ -202,8 +202,9 @@ router.post("/contacts/and", function (req, res) {
 
 let sLocIntl = "any";
 let sLocUSA = "any";
+let asFound = [];
 
-router.post("/contacts/search", function (req, res) {
+router.post("/contacts/search", async function (req, res) {
     //    console.log ("search:", req.body.string);
     //    let oButtonInput = JSON.parse(req.body);
     //    console.log("oBI: ", oButtonInput);
@@ -212,19 +213,29 @@ router.post("/contacts/search", function (req, res) {
 
     setPrevious();
     iAnds = -1;
-    console.log("asPx: ", asPrev);
+    //console.log("asPx: ", asPrev);
     //asP:  [ 'pp', ' 1 ace ' ]
     //asP:  [ 'pp a,c ' ]
     //db.contacts.find ({“GroupMembership”: {$or [{$eq: string1}, {$eq: string2}]}});
     // trim
 
+    //{"xx"} searches for xx
+    //{GM: {$in: ["xx", "yy"]}} returns xx OR yy
+    //{GM: {$all: ["xx", "yy"]}} returns xx AND yy
+
+    //{GM: "x", GM: "y"} returns only "= y"
+    //{GM: {$eq:"xx", $eq:"yy"}} does the same thing
+    //$or is not an operator
     // if asPrev.length > 1, start search string with "$and{" and flas the need for a "}""
-    if (asPrev.length > 1) {
-        sSearch = "{$and[{"; //[ 'x', 'y']
-    } else {
-        sSearch = "{$all: ["; // ['x']
-    }
-    console.log("Search string beginning: ", sSearch);
+    // if (asPrev.length > 1) {
+    //     sSearch = "{$and[{"; //[ 'x', 'y']
+    // } else {
+    //     sSearch = "{$all: ["; // ['x']
+    // }
+    let asSearch = [];
+
+    //sSearch = "{$all: [";
+    //console.log("Search string beginning: ", sSearch);
     asPrev.forEach((sFind, index) => {
         // for each asPrev
         // trim
@@ -241,7 +252,8 @@ router.post("/contacts/search", function (req, res) {
                 //     sCat = "." + sCat;
                 // }
                 //                sSearch += "$eq: " + sCat; // first: {$and{$eq: x}  second: {$and{{$eq: x}, {$eq: y}}}
-                sSearch += `"${sCat}"`;
+                //sSearch += `"${sCat}"`;
+                asSearch.push(sCat);
                 if (j === asFinds.length - 1) {
                     sSearch += "]}"; // close out
                 } else {
@@ -249,6 +261,8 @@ router.post("/contacts/search", function (req, res) {
                 }
                 console.log("Search string: ", sSearch);
             });
+        } else {
+            asSearch.push(asFinds[0]);
         }
     });
     // try splitting each sub-array by ','
@@ -261,32 +275,15 @@ router.post("/contacts/search", function (req, res) {
     // if last asPrev, add "} to search string.  Else add ", "
     // end for each asPrev.  Go around, 
 
-    dbConn.queryDB (sSearch);
-
-    // if (sLocIntl !== "any" && sLocIntl !== "none") {
-    //     sLocIntl = $("#tag-loc").val();
-    // } else if (sLocIntl === "any") {
-    //     sLocIntl = "intl";
-    // }
-    // if (sLocUSA !== "any" && sLocUSA !== "none") {
-    //     sLocUSA = $("#tag-loc").val();
-    // } else if (sLocUSA === "any") {
-    //     sLocUSA = "USA"; // just search for the "USA" prefix
-    // }
-    // if (sLocIntl === "intl") {
-    //     sLocUSA = "any";
-    // }
-    // sLocUSA = "any"; // too many without location
-    // sLocIntl = "any"; // ditto
-    // for (var i = 0; i < oButtonInput.boxes.length; i++) {
-    //     //            asSubDepts[i] = boxes[i].value;
-    //     aoResults = queryDB(boxes[i].value, sLocUSA, sLocIntl); // shows the results
-    // }
-    //        console.log(aoResults);
-
-    res.render("index", {
+    //console.log ("asSearch: ", asSearch);
+    dbConn.queryDB(asSearch).then (function(asFound) {
+        //console.log("asFound: ", asFound);
+        res.render("index", {
+            asFound: asFound
+        });
     });
     return;
 });
+
 
 module.exports = router;

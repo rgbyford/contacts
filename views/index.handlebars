@@ -52,4 +52,8 @@
     <p class="previous">{{this}} {{#unless @last}}AND{{/unless}}</p>
     {{/each}}
     {{/if}}
+    {{#each asFound}}
+    <p class="previous">{{this.GivenName}} {{this.FamilyName}}</p>
+    {{/each}}
+
 </form>

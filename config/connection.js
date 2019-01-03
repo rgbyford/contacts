@@ -1,10 +1,12 @@
 /* eslint-disable brace-style */
 const MongoClient = require("mongodb").MongoClient;
+const routes = require("../routes/routes.js");
 //const test = require("assert");
 // Connection url
 const dbName = "toby";
 const MONGODB_URI = process.env.MONGODB_URI || `mongodb://localhost/${dbName}`;
 let dbToby;
+//let asFound = [];
 //let db;
 // Connect using MongoClient
 MongoClient.connect(MONGODB_URI, function (err, db) {
@@ -19,59 +21,47 @@ MongoClient.connect(MONGODB_URI, function (err, db) {
     });
 });
 
-module.exports.queryDB = async function (sSearch) {
-    console.log("sSearch: ", sSearch);
-    const cursor = dbToby.collection("contacts").find({
-//        GroupMembership: sSearch
-        GroupMembership: {$all: ["pp", "actor", "old"]}
-    }).project({
-        GivenName: 1,
-        FamilyName: 1,
-        GroupMembership: 1
-    });
-    console.log(cursor.cmd);
-    cursor.each(function (err, item) {
-        if (err) {throw (err);}
-        // If the item is null then the cursor is exhausted/empty and closed
-        if (item === null) {
-            console.log ("No find");
-            // Show that the cursor is closed
-            // cursor.toArray(function (err, items) {
-            //     //test.equal(null, err);
+// module.exports.getFoundItems = function () {
+//     return (asFound);
+// };
 
-            //     // Let"s close the db
-            //     //                db.close();
-            // });
-        }
-        console.log(item);
+module.exports.queryDB = async function (asSearch) {
+    return new Promise((resolve, reject) => {
+        const cursor = dbToby.collection("contacts").find({
+            GroupMembership: {
+                $all: asSearch
+            }
+        }).project({
+            GivenName: 1,
+            FamilyName: 1,
+            GroupMembership: 1
+        });
+        let asFound = [];
+        cursor.each(async function (err, item) {
+            if (err) {
+                throw (err);
+            }
+            if (item === null) {
+                console.log("No find - or last item");
+                // Show that the cursor is closed
+                // cursor.toArray(function (err, items) {
+                //     //test.equal(null, err);
+                //     // Let"s close the db
+                //     //                db.close();
+                // });
+                //dbToby.close ();
+                resolve(asFound);
+            }
+            asFound.push(item);
+            //console.log("item: ", item);
+        });
+        console.log("end of queryDB");
     });
-    //    await cursor.nextObject();
-    return (cursor);
 };
-
-
-//let Contact;
-//let aoAlreadySaved = [];
-//console.log("init aoAS");
-
-// const db = mongoose.connection;
-// db.on("error", console.error.bind(console, "connection error:"));
-// db.once("open", async function () {
-//             console.log("we"
-//                 re connected!");
-//                 const ContactSchema = new mongoose.Schema({
-//                     heading: String,
-//                     story: String,
-//                     link: String,
-//                     note: String
-//                 }); Contact = mongoose.model("Contact", ContactSchema);
-//             });
 
 module.exports.getSaved = function async () {
     return (adminDb.contacts.find());
 };
-
-let iCC = 0;
 
 function insertContactCallback(err, res) {
     if (err) {
@@ -81,8 +71,7 @@ function insertContactCallback(err, res) {
         //console.log("iC result: ", ++iCC, res.result);
     }
 }
-//db.contacts.find({"oContact.GivenName": "Aaron"})
-// GroupMembership
+
 module.exports.insertContact = function (oContact) {
     dbToby.collection("contacts").updateOne({
         "E-mail1-Value": oContact["E-mail1-Value"]
