@@ -1,21 +1,17 @@
-//var file = File.createFromFileName("path/to/some/file");
-
-//var csvFiles = document.querySelectorAll(".csv");
-
-let dbFunctions = require("./database.js");
+let dbStuff = require("./database.js");
 let papa = require("papaparse");
 var fs = require("fs");
+let index = 0;      // just to count and display the rows
 
 function CJDone(results) {
-    // console.log("CJD: ", results);
-    dbFunctions.writeFile();
-    //    dbFunctions.importNames(results.data);
-    console.log("import done");
+    dbStuff.importNames();
+    dbStuff.writeFile();
+    console.log(`import done: ${index} rows according to papaparse`);
 }
 
 function CJRow(results) {
-    // console.log("CJR");
-    dbFunctions.importNames(results.data);
+    index++;
+    dbStuff.aoContacts.push(results.data);
 }
 
 var myConfig = {
@@ -45,10 +41,8 @@ var myConfig = {
 };
 
 module.exports.csvJson = function (file) {
-    dbFunctions.readCatsFile(); // read in existing categories
-    // When the file is a local file when need to convert to a file Obj.
+    dbStuff.readCatsFile(); // read in existing categories
+    // When the file is a local file we need to convert to a file Obj.
     var content = fs.readFileSync("./uploads/" + file, "utf8");
     papa.parse(content, myConfig);
-    // console.log("csvJson");
 };
-

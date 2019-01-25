@@ -1,7 +1,7 @@
 let express = require("express");
 let router = express.Router();
-const cjFns = require("../public/csvjson.js");
-const dbFunctions = require("../public/database.js");
+const cjFns = require("../models/csvjson.js");
+const dbFunctions = require("../models/database.js");
 const dbConn = require("../config/connection.js");
 let aoCats = [{}];
 let asPrev = [];
@@ -202,56 +202,19 @@ router.post("/contacts/and", function (req, res) {
 });
 
 router.post("/contacts/search", async function (req, res) {
-    //    console.log ("search:", req.body.string);
-    //    let oButtonInput = JSON.parse(req.body);
-    //    console.log("oBI: ", oButtonInput);
-
-    //let sSearch;
-
     setPrevious();
-    //console.log ("asP0: ", asPrev[0]);
-    //console.log ("asP1: ", asPrev[1]);
-    //console.log ("asPLen: ", asPrev.length);
     iAnds = -1;
-    //console.log("asPx: ", asPrev);
-    //asP:  [ 'pp', ' 1 ace ' ]
-    //asP:  [ 'pp a,c ' ]
-    //db.contacts.find ({“GroupMembership”: {$or [{$eq: string1}, {$eq: string2}]}});
-    // trim
-
-    //{"xx"} searches for xx
-    //{GM: {$in: ["xx", "yy"]}} returns xx OR yy
-    //{GM: {$all: ["xx", "yy"]}} returns xx AND yy
-
-    //{GM: "x", GM: "y"} returns only "= y"
-    //{GM: {$eq:"xx", $eq:"yy"}} does the same thing
-    //$or is not an operator
-    // if asPrev.length > 1, start search string with "$and{" and flas the need for a "}""
-    // if (asPrev.length > 1) {
-    //     sSearch = "{$and[{"; //[ 'x', 'y']
-    // } else {
-    //     sSearch = "{$all: ["; // ['x']
-    // }
     let asSearchAnd = [];
     let asSearchOr = [];
 
-    //sSearch = "{$all: [";
-    //console.log("Search string beginning: ", sSearch);
     asPrev.forEach((sFind, index) => {
-        // for each asPrev
-        // trim
         sFind = sFind.trim();
-        // split by " "
         let asFinds = sFind.split(" ");
         if (asFinds.length > 1) { //['x y']
-            //console.log("asF len: ", asFinds.length);
             asFinds.forEach((sCat, j) => {
-                // console.log ("sCat: ", sCat);
-                // have to look for x,y as an OR
                 let asFindCommas = sCat.split(",");
                 if (asFindCommas.length > 1) {
                     // there's an OR
-                    //console.log ("asFC", asFindCommas);     // correct
                     asFindCommas.forEach((sCatOr, k) => {
                         asSearchOr.push(sCatOr);
                     });
@@ -259,12 +222,6 @@ router.post("/contacts/search", async function (req, res) {
                     if (sCat !== "any") {
                         asSearchAnd.push(sCat);
                     }
-                    // if (j === asFinds.length - 1) {
-                    //     sSearch += "]}"; // close out
-                    // } else {
-                    //     sSearch += ", "; // another to come
-                    // }
-                    //console.log("Search string: ", sSearch);
                 }
             });
         } else {
@@ -272,7 +229,7 @@ router.post("/contacts/search", async function (req, res) {
         }
     });
     // try splitting each sub-array by ','
-    // search is <first elemant> AND <second element>
+    // search is <first element> AND <second element>
     // if split returns > 1, build an OR (pp AND (a OR c))
     // if split returns 1, just treat it "as is" (1 AND ace)
     // if "any" as the last sub-array, ignore it
@@ -280,14 +237,13 @@ router.post("/contacts/search", async function (req, res) {
     // otherwise ", {$eq: array1}, {$eq: array2}]}"
     // if last asPrev, add "} to search string.  Else add ", "
     // end for each asPrev.  Go around, 
+    console.log ("Count: ", asFound.length);
 
-    //console.log ("asSearchAnd: ", asSearchAnd);
-    console.log ("asPrev: ", asPrev);
     dbConn.queryDB(asSearchAnd, asSearchOr).then(function (asFound) {
-        //console.log("asFound: ", asFound);
         res.render("index", {
             asPrevSearch: asPrev,
-            asFound: asFound
+            asFound: asFound,
+            iFound: asFound.length
         });
     });
     return;
