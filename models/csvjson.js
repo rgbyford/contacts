@@ -4,12 +4,13 @@ var fs = require("fs");
 let index = 0;      // just to count and display the rows
 
 function CJDone(results) {
-    dbStuff.importNames();
-    dbStuff.writeFile();
+    dbStuff.importNames(index);
+    dbStuff.writeFile();        // categories
     console.log(`import done: ${index} rows according to papaparse`);
 }
 
 function CJRow(results) {
+//    document.body.style.cursor  = 'wait';
     index++;
     dbStuff.aoContacts.push(results.data);
 }

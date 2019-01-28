@@ -3,6 +3,37 @@
 console.log("index.js");
 var aoResults = [{}];
 
+$(document).ready(function () {
+    var socket = io.connect();
+    console.log(socket);
+    socket.on('connection', () => {
+        console.log("Socket connected: ", socket.id); // 'G5p5...'
+    });
+
+    socket.on('news', (data) => {
+        //    var message = event.data;
+        console.log("Socket received: ", data);
+        if (data.something === 'something') {
+            console.log("something");
+            var opts = {
+                method: "GET"
+            };
+            console.log("fetch loaded");
+            fetch("/loaded", opts).then(function (response) {
+                return (response.text());
+            }).then(function (string) {
+                // console.log("res: ", string);
+                $("body").html(string);
+                //location.reload(); // essential to refresh the page
+            });
+        }
+        socket.emit('my other event', {
+            my: 'data'
+        });
+    });
+
+});
+//});
 function selectCat(sId, sValue) {
     let obj = {};
     obj.sId = sId;
@@ -118,10 +149,17 @@ function searchButton() {
 
 }
 
-const importFile = (event) => {
-    var formData = new FormData();
+//$("#files").on("click"), (function () {
+function importFile(event) {
+    console.log("load button");
+    //        document.getElementById("page").style.cursor = "wait";
+    let formData = new FormData();
+    let bClearDB = $('#clearDB:checked').val();
+    let bClearCats = $('#clearCats:checked').val();
+    
     formData.append("avatar", event.target.files[0]);
-    formData.append("username", "abc123");
+    formData.append("clearDB", bClearDB);
+    formData.append("clearCats", bClearCats);
 
     var opts = {
         method: "PUT",
@@ -132,6 +170,8 @@ const importFile = (event) => {
     }).then(function (string) {
         // console.log("res: ", string);
         //        $("body").html(string);
-        location.reload(); // essential to refresh the page
+        //location.reload(); // essential to refresh the page
     });
-};
+    $("#loading").html("Loading");
+    $("#searchPageButton").hide();
+}

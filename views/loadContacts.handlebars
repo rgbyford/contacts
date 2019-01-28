@@ -1,0 +1,11 @@
+<h2>Load contacts</h2>
+<p>CSV file to upload to database:</p>
+<input onchange="importFile(event)" type="file" id="files" name="files[]">
+<input type="checkbox" id="clearDB" name="clearDB" value="on"> Empty the database before loading<br>
+<input type="checkbox" id="clearCats" name="clearCats" value="on"> Remove categories before loading<br>
+
+<h4 id="loading" style="background-color:#ffff99;"></h4>
+<br>
+<form method="get" action="/searchPage">
+    <button id="searchPageButton" type="submit">Return to search page</button>
+</form>

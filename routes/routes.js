@@ -37,13 +37,25 @@ router.get("/contacts", function (req, res) {
         asPrev[i] = "";
     });
     iAnds = -1;
-    //    asPrev = "";
+    dbConn.aoNotLoaded = [];
     console.log("get contacts");
     renderContacts(res);
 });
 
+router.get("/loaded", function (req, res) {
+    console.log("get loaded");
+    res.render("loaded", {
+        iNotLoaded: dbConn.aoNotLoaded.length,
+        aoNotLoaded: dbConn.aoNotLoaded
+    });
+});
+
+router.get("/loadContacts", function (req, res) {
+    console.log("get loadContacts");
+    res.render("loadContacts", {});
+});
+
 router.get("/contacts/and", function (req, res) {
-    //    iAnds++;
     console.log("get contacts/and");
     renderContacts(res);
 });
@@ -58,18 +70,34 @@ router.get("/", function (req, res) {
     res.redirect("/contacts");
 });
 
+router.get("/searchPage", function (req, res) {
+    console.log("get searchPage");
+    res.redirect("/contacts");
+});
 
-// router.use(function (req, res, next) {
-//     //    console.log("use: ", req.files); // JSON Object
-//     next();
-// });
 
 // I don"t know if the "avatar" here has to match what is in the put
 router.put("/contacts/import", uploadMulter.single("avatar"), function (req, res, next) {
     //req.file.filename gives the file name on the server
     // req.file.originalname gives the client file name
     // console.log("body: ", req.body);
-    cjFns.csvJson(req.file.filename);
+    //    document.body.style.cursor  = 'wait';
+    // console.log ("res render import");
+    // res.render("loadcontacts", {
+    //     loading: true
+    // });
+    console.log ("/contacts/import req body: ", req.body);
+    if (req.body.clearDB === 'on') {
+        dbFunctions.clearDatabase ();
+        // empty the database collection
+        // have to wait for the empty to finish
+    }
+    if (req.body.clearCats === 'on') {
+        // erase the categories file
+        // wait until done
+    }
+
+    cjFns.csvJson(req.file.filename); // needs to return a not loaded list
     //    res.render("index", {});
 });
 
@@ -84,15 +112,7 @@ router.post("/contacts/select", function (req, res) {
     let asCats14 = [];
     let bCats12Done = false;
     let bCats11Done = false;
-    //console.log("cs ", req.body.sId, req.body.sValue);
-    //    bAndBtnDisabled = req.body.sValue.length > 1;
     let bDone = (typeof (req.body.sValue) !== "string") && (req.body.sValue.length > 1);
-    //    let bDone = req.body.sValue.length > 1;
-    //console.log("bDone: ", bDone);
-    //bDone = false;
-    // disable the AND button until Next is hit
-    //    bAndBtnDisabled = true;
-
     if (!bDone) {
         aoCats.forEach(function (element, i) {
             if (element.sIsSubCatOf === req.body.sValue[0]) {
@@ -108,8 +128,6 @@ router.post("/contacts/select", function (req, res) {
     } else {
         bAndBtnDisabled = false;
     }
-    //    console.log("ABD: ", bAndBtnDisabled);
-    //if (asCats.length >= 2) { // 1 for "any" and 1 more
     if (1) {
         //    if (asCats.length >= 1) { // 1 for "any" and 1 more
         /*eslint-disable indent*/
@@ -193,7 +211,6 @@ function setPrevious() {
         }
         asValues[i] = "";
     }
-    //console.log("ca AND: ", asPrev);
 }
 
 router.post("/contacts/and", function (req, res) {
@@ -237,7 +254,6 @@ router.post("/contacts/search", async function (req, res) {
     // otherwise ", {$eq: array1}, {$eq: array2}]}"
     // if last asPrev, add "} to search string.  Else add ", "
     // end for each asPrev.  Go around, 
-    console.log ("Count: ", asFound.length);
 
     dbConn.queryDB(asSearchAnd, asSearchOr).then(function (asFound) {
         res.render("index", {

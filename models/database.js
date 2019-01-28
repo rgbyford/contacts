@@ -1,4 +1,5 @@
 const connFns = require("../config/connection.js");
+
 var contactRef;
 
 class AoCats {
@@ -76,7 +77,7 @@ function buildCategories(asTag) {
                 return (element.sThisCat === asCatSub[j]);
             });
             if (iCatFound < 0) { // category doesn't exist - add it
-//                console.log("Found a new one", asCatSub[j]);
+                //                console.log("Found a new one", asCatSub[j]);
                 aoCatsRead.push(new AoCats(sIsSubCatOf, asCatSub[j]));
             }
             sIsSubCatOf = asCatSub[j];
@@ -86,9 +87,15 @@ function buildCategories(asTag) {
 
 let iRows = 0;
 let aoContacts = [];
+let iSavedCount;
 
-function importNames() {
+function importNames(iCount = 0) {
+    if (iCount) {
+        iSavedCount = iCount;
+    }
     if (aoContacts.length === 0) { // done
+        console.log (`Import names done - ${iRows} rows`);
+//        document.body.style.cursor  = 'default';
         return;
     }
     var oContact = {};
@@ -132,10 +139,8 @@ function importNames() {
     });
 
     // now put it into the database
-    if (contactRef !== "") { // don't know how it is "", but at the end of the file ...
-        connFns.insertContact(oContact);
-        aoContacts.shift(); // remove the one used
-    }
+    aoContacts.shift(); // remove the one used
+    connFns.insertContact(oContact, aoContacts.length === 0);  // iCount 0 except for first call
     iRows++;
     return;
 }

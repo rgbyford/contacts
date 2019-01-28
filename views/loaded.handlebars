@@ -1,0 +1,25 @@
+<style>
+table, th, td {
+  border: 1px solid black;
+}
+</style>
+<h2>These {{iNotLoaded}} didn't load:</h2>
+<form>
+<table style="width: 600px">
+<tr>
+    <th>Given Name</th>
+    <th>Family Name</th>
+</tr>
+    {{#each aoNotLoaded}}
+    <tr>
+        <td>{{this.GivenName}}</td>
+        <td>{{this.FamilyName}}</td>
+    </tr>
+    {{/each}}
+</table>
+</form>
+<br>
+<form method="get" action="/searchPage">
+    <button type="submit">Return to search page</button>
+</form>
+
