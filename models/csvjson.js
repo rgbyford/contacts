@@ -5,8 +5,8 @@ let index = 0;      // just to count and display the rows
 
 function CJDone(results) {
     dbStuff.importNames(index);
-    dbStuff.writeFile();        // categories
     console.log(`import done: ${index} rows according to papaparse`);
+    index = 0;
 }
 
 function CJRow(results) {

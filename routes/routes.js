@@ -77,7 +77,7 @@ router.get("/searchPage", function (req, res) {
 
 
 // I don"t know if the "avatar" here has to match what is in the put
-router.put("/contacts/import", uploadMulter.single("avatar"), function (req, res, next) {
+router.put("/contacts/import", uploadMulter.single("avatar"), async function (req, res, next) {
     //req.file.filename gives the file name on the server
     // req.file.originalname gives the client file name
     // console.log("body: ", req.body);
@@ -88,17 +88,15 @@ router.put("/contacts/import", uploadMulter.single("avatar"), function (req, res
     // });
     console.log ("/contacts/import req body: ", req.body);
     if (req.body.clearDB === 'on') {
-        dbFunctions.clearDatabase ();
+        await dbConn.clearDB ();
         // empty the database collection
-        // have to wait for the empty to finish
     }
     if (req.body.clearCats === 'on') {
+        dbFunctions.deleteCatsFile ();
         // erase the categories file
-        // wait until done
     }
 
     cjFns.csvJson(req.file.filename); // needs to return a not loaded list
-    //    res.render("index", {});
 });
 
 let asValues = [];
@@ -143,18 +141,18 @@ router.post("/contacts/select", function (req, res) {
             case "cats12":
                 //                bAndBtnDisabled = false;
                 asValues[2] = req.body.sValue;
-                console.log("sV12: ", asValues[2]);
+                //console.log("sV12: ", asValues[2]);
                 asCats11 = [asValues[1]];
                 asCats12 = [asValues[2]];
                 asCats13 = asCats.length > 2 ? asCats : [];
-                console.log("asC13: ", asCats13);
+                //console.log("asC13: ", asCats13);
                 asValues[3] = asCats13[0];
                 bCats11Done = true;
                 bCats12Done = true;
                 break;
             case "cats13":
                 asValues[3] = req.body.sValue;
-                console.log("sV13: ", asValues[3]);
+                //console.log("sV13: ", asValues[3]);
                 asCats11 = [asValues[1]];
                 asCats12 = [asValues[2]];
                 asCats13 = [asValues[3]];
@@ -165,7 +163,7 @@ router.post("/contacts/select", function (req, res) {
                 break;
             case "cats14":
                 asValues[4] = req.body.sValue;
-                console.log("sV14: ", asValues[4]);
+                //console.log("sV14: ", asValues[4]);
                 asCats11 = [asValues[1]];
                 asCats12 = [asValues[2]];
                 asCats13 = [asValues[3]];
@@ -255,6 +253,7 @@ router.post("/contacts/search", async function (req, res) {
     // if last asPrev, add "} to search string.  Else add ", "
     // end for each asPrev.  Go around, 
 
+        console.log ("/contacts/search: ", asSearchAnd, asSearchOr);
     dbConn.queryDB(asSearchAnd, asSearchOr).then(function (asFound) {
         res.render("index", {
             asPrevSearch: asPrev,

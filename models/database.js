@@ -1,6 +1,6 @@
 const connFns = require("../config/connection.js");
 
-var contactRef;
+let iBadOnes = 0;
 
 class AoCats {
     constructor(sCat, asSubCat) {
@@ -17,6 +17,14 @@ let fdCats;
 // functions for dealing with the categories
 
 function openCatsFile(mode) {
+    // if (mode === 'r') {
+    // fs.accessSync('categories.txt', fs.constants.F_OK, (err) => {
+    //     console.log(`categories.txt ${err ? 'does not exist' : 'exists'}`);
+    //     if (err) {
+    //         mode = 'w';     // open it for write (makes new one)
+    //     }
+    //   });
+    // }
     fdCats = fs.openSync("categories.txt", mode);
 }
 
@@ -26,14 +34,28 @@ function writeCatsFile(aoCats) {
     fs.closeSync(fdCats);
 }
 
+module.exports.deleteCatsFile = function () {
+    fs.unlinkSync('categories.txt', (err) => {
+        if (err) throw err;
+        console.log('categories file deleted');
+    });
+}
+
 module.exports.writeFile = function () {
+    console.log("wCF: ", aoCatsRead.length);
+    console.log("Bad tags: ", iBadOnes);
     writeCatsFile(aoCatsRead);
+    iBadOnes = 0;
 };
 
 module.exports.readCatsFile = function () {
-    openCatsFile("r");
+    openCatsFile("a+");
     const sCats = fs.readFileSync(fdCats, "utf8");
-    aoCatsRead = JSON.parse(sCats);
+    if (sCats.length) {
+        aoCatsRead = JSON.parse(sCats);
+    } else {
+        aoCatsRead = [];
+    }
     fs.closeSync(fdCats);
     return (aoCatsRead);
 };
@@ -58,8 +80,11 @@ function buildCategories(asTag) {
         // first, clean up the string
         // ignore anything that doesn't begin with .
         if (asTag[i][0] !== ".") {
+            //console.log ("continue");
+            iBadOnes++;
             continue;
         }
+        asTag[i] = asTag[i].slice(1);     // remove the .
         // replace .. with _
         asTag[i] = asTag[i].replace("..", "_");
         // replace vendors with vendor
@@ -73,11 +98,17 @@ function buildCategories(asTag) {
         sIsSubCatOf = "";
         for (let j = 0; j < asCatSub.length; j++) { // go through the cats & subCats
             let iCatFound;
+            //            if (aoCatsRead.length === 0) {
+            //                iCatFound = -1;
+            //            } else {
+            //                console.log ("calling findIndex");
             iCatFound = aoCatsRead.findIndex(function (element) {
                 return (element.sThisCat === asCatSub[j]);
             });
+            //            }
+            //            console.log ("iCatFound: ", iCatFound);
             if (iCatFound < 0) { // category doesn't exist - add it
-                //                console.log("Found a new one", asCatSub[j]);
+                //console.log("Found a new one", asCatSub[j]);
                 aoCatsRead.push(new AoCats(sIsSubCatOf, asCatSub[j]));
             }
             sIsSubCatOf = asCatSub[j];
@@ -94,8 +125,8 @@ function importNames(iCount = 0) {
         iSavedCount = iCount;
     }
     if (aoContacts.length === 0) { // done
-        console.log (`Import names done - ${iRows} rows`);
-//        document.body.style.cursor  = 'default';
+        console.log(`Import names done - ${iRows} rows`);
+        //        document.body.style.cursor  = 'default';
         return;
     }
     var oContact = {};
@@ -115,17 +146,21 @@ function importNames(iCount = 0) {
             asFirstSplit = sValue.split(" ::: ");
             for (let i = 0; i < asFirstSplit.length; i++) {
                 let sTemp;
-                if (asFirstSplit[i][0] === ".") {
-                    asFirstSplit[i] = asFirstSplit[i].slice(1);
-                }
+                //if (asFirstSplit[i][0] === ".") {
+                //    asFirstSplit[i] = asFirstSplit[i].slice(1);
+                //}
                 // look for .locn and add "intl" if it"s not _USA
                 if (asFirstSplit[i].indexOf(".loc_U") < 0) {
                     sTemp = asFirstSplit[i].replace(".loc", "intl");
                 } else {
                     sTemp = asFirstSplit[i];
                 }
+                if (sTemp[0] === '.') {     // remove .
+                    sTemp = sTemp.slice(1);
+                }
                 asSecondSplit = asSecondSplit.concat(sTemp.split("_"));
             }
+            //console.log ("Calling buildCats");
             buildCategories(asFirstSplit);
             oContact[sPropName] = arrayUnique(asSecondSplit);
         } else {
@@ -140,7 +175,7 @@ function importNames(iCount = 0) {
 
     // now put it into the database
     aoContacts.shift(); // remove the one used
-    connFns.insertContact(oContact, aoContacts.length === 0);  // iCount 0 except for first call
+    connFns.insertContact(oContact, aoContacts.length === 0); // iCount 0 except for first call
     iRows++;
     return;
 }

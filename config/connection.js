@@ -16,12 +16,25 @@ MongoClient.connect(url, function (err, client) {
     });
 });
 
+module.exports.clearDB = async function () {
+    try {
+        await dbToby.collection("contacts").drop();
+        console.log("Database emptied");
+    } catch (error) {
+        console.log("Error emptying database");
+    }
+}
+
+let iSearches = 0;
+
 module.exports.queryDB = async function (asSearchAnd, asSearchOr) {
-    return new Promise((resolve, reject) => {
+    let asFound = [];
+    return new Promise(async (resolve, reject) => {
         if (asSearchOr.length === 0) {
             // generates an error
             asSearchOr[0] = asSearchAnd[0];
         }
+        console.log(`Search ${iSearches++}: ${asSearchAnd} ::: ${asSearchOr}`);
         const cursor = dbToby.collection("contacts").find({
             GroupMembership: {
                 $all: asSearchAnd,
@@ -32,18 +45,19 @@ module.exports.queryDB = async function (asSearchAnd, asSearchOr) {
             FamilyName: 1,
             GroupMembership: 1
         });
-        let asFound = [];
-        cursor.each(async function (err, item) {
+        cursor.each(function (err, item) {
             if (err) {
-                throw (err);
+                console.log("Cursor error: ", err);
+                //throw (err);
             }
             if (item === null) {
-                console.log("No find - or last item");
+                console.log(`Last item. ${asFound.length} found.`);
                 resolve(asFound);
             }
+            console.log(asFound);
             asFound.push(item);
         });
-        console.log("end of queryDB");
+        console.log("end of queryDB - found: ", asFound.length);
     });
 };
 
@@ -51,14 +65,11 @@ module.exports.getSaved = function async () {
     return (adminDb.contacts.find());
 };
 
-//let routeModule = require("../routes/routes.js");
 const serverFns = require('../server.js');
-//let iRowCount = 0;
 let iRowCBCount = 0;
 let dbStuff = require("../models/database.js");
 let oContactSaved;
 let aoNotLoaded = [];
-//let bRenderedContacts;
 module.exports.aoNotLoaded = aoNotLoaded;
 let bLast;
 
@@ -87,9 +98,10 @@ function insertContactCallback(err, res) {
         dbStuff.importNames(); // recursive call for next row
         //console.log("iC result: ", ++iCC, res.result);
     }
-//if (!bRenderedContacts && (iRowCBCount >= iSavedCount - 2)) {
+    //if (!bRenderedContacts && (iRowCBCount >= iSavedCount - 2)) {
     if (bLast) {
         console.log("last callback");
+        dbStuff.writeFile(); // categories
         serverFns.sendSomething();
         bRenderedContacts = true;
         bLast = false;
@@ -100,13 +112,7 @@ function insertContactCallback(err, res) {
 
 module.exports.insertContact = function (oContact, bLastParam) {
     bLast = bLastParam;
-    // if (iCount > 0) { // first call
-    //     bRenderedContacts = false;
-    //     iSavedCount = iCount;
-    // }
-    //iRowCount++;
     oContactSaved = oContact;
-    //console.log("iC: ", rowCount++);
     const res = dbToby.collection("contacts").updateOne({
         "E-mail1-Value": oContact["E-mail1-Value"],
         "GivenName": oContact["GivenName"],

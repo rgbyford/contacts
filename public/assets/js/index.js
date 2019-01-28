@@ -3,10 +3,14 @@
 console.log("index.js");
 var aoResults = [{}];
 
-$(document).ready(function () {
+//$(document).ready(function () {
+    function initSocket () {
     var socket = io.connect();
     console.log(socket);
-    socket.on('connection', () => {
+    //}
+
+    //    });
+    socket.on('connect', () => {
         console.log("Socket connected: ", socket.id); // 'G5p5...'
     });
 
@@ -31,9 +35,12 @@ $(document).ready(function () {
             my: 'data'
         });
     });
+}
 
-});
 //});
+
+
+
 function selectCat(sId, sValue) {
     let obj = {};
     obj.sId = sId;
@@ -156,10 +163,11 @@ function importFile(event) {
     let formData = new FormData();
     let bClearDB = $('#clearDB:checked').val();
     let bClearCats = $('#clearCats:checked').val();
-    
+
     formData.append("avatar", event.target.files[0]);
     formData.append("clearDB", bClearDB);
     formData.append("clearCats", bClearCats);
+    initSocket ();
 
     var opts = {
         method: "PUT",
