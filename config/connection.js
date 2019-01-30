@@ -4,7 +4,7 @@ const dbName = "toby";
 //const MONGODB_URI = process.env.MONGODB_URI || `mongodb://localhost/${dbName}`;
 let dbToby;
 const url = "mongodb://localhost:27017";
-
+const routes = require ("../routes/routes");
 // Connect using MongoClient
 MongoClient.connect(url, function (err, client) {
     if (err) {
@@ -65,18 +65,27 @@ module.exports.getSaved = function async () {
     return (adminDb.contacts.find());
 };
 
-const serverFns = require('../server.js');
+module.exports.getNotLoaded = function () {
+    return (aoNotLoaded);
+};
+
+module.exports.clearNotLoaded = function () {
+    aoNotLoaded.length = 0;
+    return;
+};
+
+const serverFns = require('../contacts.js');
 let iRowCBCount = 0;
 let dbStuff = require("../models/database.js");
 let oContactSaved;
 let aoNotLoaded = [];
-module.exports.aoNotLoaded = aoNotLoaded;
 let bLast;
 
 function insertContactCallback(err, res) {
     //console.log("iCCB: ", rowCBCount);
     if (err) {
         console.log("iC err: ", err.name, err.message);
+        console.log ("iC err - not loaded", aoNotLoaded.length);
         //console.log ("result: ", err);
     } else {
         if (res.result.nModified > 0) {
@@ -101,6 +110,7 @@ function insertContactCallback(err, res) {
     //if (!bRenderedContacts && (iRowCBCount >= iSavedCount - 2)) {
     if (bLast) {
         console.log("last callback");
+        console.log ("Not loaded: ", aoNotLoaded.length);
         dbStuff.writeFile(); // categories
         serverFns.sendSomething();
         bRenderedContacts = true;

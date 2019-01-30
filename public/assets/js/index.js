@@ -30,6 +30,7 @@ var aoResults = [{}];
                 $("body").html(string);
                 //location.reload(); // essential to refresh the page
             });
+            socket.close();
         }
         socket.emit('my other event', {
             my: 'data'
@@ -63,31 +64,31 @@ function selectCat(sId, sValue) {
     });
 }
 
-$(".names").on("click"), (function () {
-    const id = event.target.id;
-    const sPhone = aoResults[id].oContact["Phone1-Value"];
-    getContact(sPhone).then(function (resolve, reject) {
-        if (reject) {
-            throw err;
-        }
-        if (resolve.status === 404) {
-            var sorry = document.createElement("p");
-            sorry.textContent = "Sorry.  No image.";
-            document.getElementById(id).appendChild(sorry);
-        } else {
-            var img = document.createElement("img");
-            img.src = resolve.avatar;
-            img.id = "picture";
-            img.width = "150";
-            document.getElementById(id).appendChild(img);
-            $("#picture").attr("style", "display:block");
-        }
-        var phone = document.createElement("p");
-        phone.textContent = sPhone;
-        document.getElementById(id).appendChild(phone);
+// $(".names").on("click"), (function () {
+//     const id = event.target.id;
+//     const sPhone = aoResults[id].oContact["Phone1-Value"];
+//     getContact(sPhone).then(function (resolve, reject) {
+//         if (reject) {
+//             throw err;
+//         }
+//         if (resolve.status === 404) {
+//             var sorry = document.createElement("p");
+//             sorry.textContent = "Sorry.  No image.";
+//             document.getElementById(id).appendChild(sorry);
+//         } else {
+//             var img = document.createElement("img");
+//             img.src = resolve.avatar;
+//             img.id = "picture";
+//             img.width = "150";
+//             document.getElementById(id).appendChild(img);
+//             $("#picture").attr("style", "display:block");
+//         }
+//         var phone = document.createElement("p");
+//         phone.textContent = sPhone;
+//         document.getElementById(id).appendChild(phone);
 
-    });
-});
+//     });
+// });
 
 
 function nextButton(sId) {

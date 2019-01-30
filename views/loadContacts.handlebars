@@ -1,13 +1,17 @@
 <h2>Load contacts</h2>
-<p>CSV file to upload to database:</p>
-<input onchange="importFile(event)" type="file" id="files" name="files[]">
-<br><br>
+<h4>CSV file to upload to database:</h4>
+<br>
 <input type="checkbox" id="clearDB" name="clearDB" value="on"> Empty the database before loading<br>
 <br>
-<input type="checkbox" id="clearCats" name="clearCats" value="on"> Remove categories before loading<br>
+<input type="checkbox" id="clearCats" name="clearCats" value="on"> Remove categories before loading<br><br>
+<input style="padding:10px;" onchange="importFile(event)" type="file" id="files" name="files[]">
+<br><br>
 
 <h4 id="loading" style="background-color:#ffff99;"></h4>
-<br>
+<br><br>
 <form method="get" action="/searchPage">
     <button id="searchPageButton" type="submit">Return to search page</button>
 </form>
+<script src="public/assets/js/index.js"></script>
+<script src="config/socket.io.js"></script>
+<link rel="stylesheet" type="text/css" href="public/assets/css/main.css">

@@ -4,7 +4,7 @@ let exphbs = require("express-handlebars");
 //var booting = require('booting');
 
 //var app = require('./app');
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 4000;
 
 
 //http.listen(PORT);
@@ -57,7 +57,7 @@ app.use(serveStatic(path.join(__dirname, 'public')));
 app.get('*', function (req, res) {
     console.log("contacts sendFile: ", path.join(__dirname, req.params[0]));
     res.sendFile(path.join(__dirname, req.params[0]));
-    console.log("contacts sendFile done: ", path.join("/var/www/html/", req.params[0]));
+    console.log("contacts sendFile done: ", path.join(__dirname, req.params[0]));
 });
 
 

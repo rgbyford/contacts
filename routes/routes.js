@@ -37,21 +37,26 @@ router.get("/contacts", function (req, res) {
         asPrev[i] = "";
     });
     iAnds = -1;
-    dbConn.aoNotLoaded = [];
-    console.log("get contacts");
+    console.log("get loadContacts");
     renderContacts(res);
 });
 
 router.get("/loaded", function (req, res) {
+    let aoNotLoaded = [];
+    aoNotLoaded = dbConn.getNotLoaded();
     console.log("get loaded");
+    console.log ("aoNL length", aoNotLoaded.length);
+    console.log ("aoNL[0]: ", aoNotLoaded[0]);
     res.render("loaded", {
-        iNotLoaded: dbConn.aoNotLoaded.length,
-        aoNotLoaded: dbConn.aoNotLoaded
+        iNotLoaded: aoNotLoaded.length,
+        aoNotLoaded: aoNotLoaded
     });
 });
 
 router.get("/loadContacts", function (req, res) {
-    console.log("get loadContacts");
+    console.log ("glC - cleared aoNL");
+    dbConn.clearNotLoaded();
+    console.log("get contacts");
     res.render("loadContacts", {});
 });
 
