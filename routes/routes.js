@@ -82,7 +82,6 @@ router.get("/searchPage", function (req, res) {
     res.redirect("/contacts");
 });
 
-
 // I don"t know if the "avatar" here has to match what is in the put
 router.put("/contacts/import", uploadMulter.single("avatar"), async function (req, res, next) {
     //req.file.filename gives the file name on the server
@@ -237,6 +236,27 @@ router.post("/contacts/and", function (req, res) {
     res.redirect("/contacts/and");
 });
 
+let aoFoundPeople = [];
+
+router.post("/contacts/nameClicked", function (req, res) {
+    let person = aoFoundPeople[req.body.sId];
+    console.log("name clicked: ", req.body.sId);
+    console.log(person);
+    console.log("Phone: ", person['Phone1-Value']);
+    if (person['Phone1-Value'] === undefined) {
+        person.Phone1 = "no phone number";
+    } else {
+        person.Phone1 = person['Phone1-Value'];
+    }
+    aoFoundPeople[req.body.sId] = person;
+    res.render("index", {
+        search: true,
+        asPrevSearch: asPrev,
+        aoFound: aoFoundPeople
+    });
+
+});
+
 router.post("/contacts/search", async function (req, res) {
     setPrevious();
     iAnds = -1;
@@ -275,13 +295,21 @@ router.post("/contacts/search", async function (req, res) {
     // end for each asPrev.  Go around, 
 
     //console.log("/contacts/search: ", asSearchAnd, asSearchOr);
-    dbConn.queryDB(asSearchAnd, asSearchOr).then(function (asFound) {
-        let iFound = asFound.length;
-        //console.log("/contacts/search: ", iFound);
+    dbConn.queryDB(asSearchAnd, asSearchOr).then(function (aoFound) {
+        // mongo returns an extra null element on the end of the array
+        aoFound.length = aoFound.length - 1;
+        // don't ask why HowMany is done in such a weird way
+        // handlebars wasn't coping with an extra variable
+        for (let i = 0; i < aoFound.length; i++) {
+            aoFound[i].itemNum = i;
+        }
+        aoFound[0].HowMany = aoFound.length;
+        aoFoundPeople = aoFound;
+        //        console.log("/contacts/search: ", aoFoundPeople);
         res.render("index", {
+            search: true,
             asPrevSearch: asPrev,
-            asFound: asFound,
-            iFound: iFound
+            aoFound: aoFound
         });
     });
     return;

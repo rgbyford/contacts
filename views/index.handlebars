@@ -57,25 +57,25 @@
     {{/if}}
     <input class="selectdd" type='button' {{#if andBtnDisabled}} disabled{{/if}} onclick='andButton()' value='AND' id='and'>
     <input class="selectdd" type='button' onclick='searchButton()' value='Search' id='search'>
-    {{/unless}}
     {{#if search}}
     <p>Searching:</p>
     {{#each asPrev}}
     <p class="previous">{{this}} {{#unless @last}}AND{{/unless}}</p>
     {{/each}}
     {{/if}}
+    {{/unless}}
     <br>
     {{#each asPrevSearch}}
     {{#if @first}}
-    <h4>Searched for: </h4>
+    <h3>Searched for: </h3>
     {{/if}}
     <p>{{this}} {{#unless @last}}AND{{/unless}}</p>
     {{/each}}
-    {{#each asFound}}
+    {{#each aoFound}}
     {{#if @first}}
-     <h3> Search results ({{iFound}}): </h3>
+     <h3> Search results ({{this.HowMany}}): </h3>
     {{/if}}
-    <p class="previous">{{this.GivenName}} {{this.FamilyName}}</p>
+    <p class="names" onclick='nameClick({{this.itemNum}})'>{{this.GivenName}} {{this.FamilyName}} {{this.Phone1}}</p>
     {{/each}}
 
 </form>

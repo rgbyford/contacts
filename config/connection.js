@@ -43,7 +43,8 @@ module.exports.queryDB = async function (asSearchAnd, asSearchOr) {
         }).project({
             GivenName: 1,
             FamilyName: 1,
-            GroupMembership: 1
+            GroupMembership: 1,
+            'Phone1-Value': 1
         });
         cursor.each(function (err, item) {
             if (err) {
@@ -54,7 +55,7 @@ module.exports.queryDB = async function (asSearchAnd, asSearchOr) {
                 console.log(`Last item. ${asFound.length} found.`);
                 resolve(asFound);
             }
-            // console.log(asFound);
+            //console.log(asFound);
             asFound.push(item);
         });
         console.log("end of queryDB - found: ", asFound.length);

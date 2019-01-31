@@ -64,32 +64,28 @@ function selectCat(sId, sValue) {
     });
 }
 
-// $(".names").on("click"), (function () {
-//     const id = event.target.id;
-//     const sPhone = aoResults[id].oContact["Phone1-Value"];
-//     getContact(sPhone).then(function (resolve, reject) {
-//         if (reject) {
-//             throw err;
-//         }
-//         if (resolve.status === 404) {
-//             var sorry = document.createElement("p");
-//             sorry.textContent = "Sorry.  No image.";
-//             document.getElementById(id).appendChild(sorry);
-//         } else {
-//             var img = document.createElement("img");
-//             img.src = resolve.avatar;
-//             img.id = "picture";
-//             img.width = "150";
-//             document.getElementById(id).appendChild(img);
-//             $("#picture").attr("style", "display:block");
-//         }
-//         var phone = document.createElement("p");
-//         phone.textContent = sPhone;
-//         document.getElementById(id).appendChild(phone);
-
-//     });
-// });
-
+function nameClick (sId) {
+//$(".names").on("click"), (function () {
+//    const obj.sId= event.target.id;
+    //const sPhone = aoResults[id].oContact["Phone1-Value"];
+    console.log ("clicked ", sId);
+    let obj = {};
+    obj.sId = sId;
+    var opts = {
+        method: "POST",
+        body: JSON.stringify(obj),
+        headers: {
+            "Content-Type": "application/json"
+        }
+    };
+    fetch("/contacts/nameClicked", opts).then(function (response) {
+        return (response.text());
+    }).then(function (string) {
+        //console.log (string);
+        $("body").html(string);
+        //location.reload(); // essential to refresh the page
+    });
+}    
 
 function nextButton(sId) {
     console.log("button: ", `#${sId}`);
