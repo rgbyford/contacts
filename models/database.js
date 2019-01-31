@@ -2,6 +2,40 @@ const connFns = require("../config/connection.js");
 
 let iBadOnes = 0;
 
+let aasTagsMain = [
+    ['1', '1'],
+    ['event', 'event'],
+    ['los', 'los'],
+    ['mashable', 'mashable'],
+    ['PP', 'PP'],
+    ['seven-horizons', 'seven-horizons'],
+    ['via-ace', 'via-ace'],
+    ['x', 'x'],
+    ['pp', 'Prodigium'],
+    ['coc', 'Cinema of Change'],
+    ['dis', 'dis'],
+    ['ethn', 'Ethnicity'],
+    ['gender', 'gender'],
+    ['intellectual', 'intellectual'],
+    ['id', 'ideology'],
+    ['lang', 'Language spoken'],
+    ['loc', 'Location'],
+    ['net', 'Shared network'],
+    ['team', 'Prodigium worker'],
+    ['research', 'Researcher'],
+    ['sport', 'Sports pro']
+];
+
+let aoTagNames = [];
+
+for (i = 0; i < aasTagsMain.length; i++) {
+    aoTagNames.push({
+        'sShortName': aasTagsMain[i][0],
+        'sLongName': aasTagsMain[i][1]
+    });
+}
+//console.log(aoTagNames[0]);
+
 class AoCats {
     constructor(sCat, asSubCat) {
         this.sIsSubCatOf = sCat;
@@ -13,6 +47,15 @@ let aoCatsRead = [];
 
 const fs = require("fs");
 let fdCats;
+
+function indexOfByKey(obj_list, key, value) {
+    for (index in obj_list) {
+        // console.log("iOBK: ", index, obj_list[index][key], value);
+        if (obj_list[index][key] === value) return index;
+    }
+    return -1;
+}
+
 
 // functions for dealing with the categories
 
@@ -84,7 +127,7 @@ function buildCategories(asTag) {
             iBadOnes++;
             continue;
         }
-        asTag[i] = asTag[i].slice(1);     // remove the .
+        asTag[i] = asTag[i].slice(1); // remove the .
         // replace .. with _
         asTag[i] = asTag[i].replace("..", "_");
         // replace vendors with vendor
@@ -94,6 +137,14 @@ function buildCategories(asTag) {
 
         // tag is now "_cat_subcat_subcat_subcat...
         let asCatSub = asTag[i].split("_"); // Cat in the first element of the array, Subs in the others
+
+        // replace short category names with long
+        let iTagPos = indexOfByKey(aoTagNames, 'sShortName', asCatSub[0]);
+        // console.log ("iTP: ", iTagPos);
+        if (iTagPos >= 0) {
+            asCatSub[0] = aoTagNames[iTagPos].sLongName;
+            //console.log ("sTS: ", req.body.sValue[0], sSearch);            
+        }
 
         sIsSubCatOf = "";
         for (let j = 0; j < asCatSub.length; j++) { // go through the cats & subCats
@@ -155,10 +206,20 @@ function importNames(iCount = 0) {
                 } else {
                     sTemp = asFirstSplit[i];
                 }
-                if (sTemp[0] === '.') {     // remove .
+                if (sTemp[0] === '.') { // remove .
                     sTemp = sTemp.slice(1);
                 }
                 asSecondSplit = asSecondSplit.concat(sTemp.split("_"));
+                // replace short names with long
+                for (j = 0; j < asSecondSplit.length; j++) {
+                    // replace short category names with long
+                    let iTagPos = indexOfByKey(aoTagNames, 'sShortName', asSecondSplit[j]);
+                    // console.log ("iTP: ", iTagPos);
+                    if (iTagPos >= 0) {
+                        asSecondSplit[j] = aoTagNames[iTagPos].sLongName;
+                        //console.log ("sTS: ", req.body.sValue[0], sSearch);            
+                    }
+                }
             }
             //console.log ("Calling buildCats");
             buildCategories(asFirstSplit);

@@ -23,7 +23,7 @@
     <p>Choose a category:</p>
     <select class="selectdd" id="cats11" onchange="selectCat(this.id, this.value)">
         {{#each cats11}}
-        <option value={{this}}>{{this}}</option>
+        <option value='{{this}}'>{{this}}</option>
         {{/each}}
     </select>
     {{/if}}
@@ -34,7 +34,7 @@
     <p>And one or more sub-categories:</p>
     <select multiple="multiple" class="selectdd" id="cats12">
         {{#each cats12}}
-        <option value={{this}}>{{this}}</option>
+        <option value='{{this}}'>{{this}}</option>
         {{/each}}
     </select>
     <input class="selectdd" type='button' onclick='nextButton("cats12")' value='Next'>
@@ -44,14 +44,14 @@
     <p> And a sub-sub-category:</p>
     <select class="selectdd" id="cats13" onchange="selectCat(this.id, this.value)">
         {{#each cats13}}
-        <option value={{this}}>{{this}}</option>
+        <option value='{{this}}'>{{this}}</option>
         {{/each}}
     </select>
     {{/if}}
     {{#if cats14}}
     <select class="selectdd" id="cats14" onchange="selectCat(this.id, this.value)">
         {{#each cats14}}
-        <option value={{this}}>{{this}}</option>
+        <option value='{{this}}'>{{this}}</option>
         {{/each}}
     </select>
     {{/if}}
