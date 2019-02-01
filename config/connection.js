@@ -4,7 +4,7 @@ const dbName = "toby";
 //const MONGODB_URI = process.env.MONGODB_URI || `mongodb://localhost/${dbName}`;
 let dbToby;
 const url = "mongodb://localhost:27017";
-const routes = require ("../routes/routes");
+const routes = require("../routes/routes");
 // Connect using MongoClient
 MongoClient.connect(url, function (err, client) {
     if (err) {
@@ -25,16 +25,67 @@ module.exports.clearDB = async function () {
     }
 }
 
-let iSearches = 0;
+module.exports.findImage = async function (phone, findImageCB) {
+    let found;
+    console.log("findImage 1: ", phone);
+    let records = await dbToby.collection('images').find({
+        'Phone1-Value': phone
+    }).count();
+    console.log("fI records: ", records);
+    if (records > 0) {
+        //            await dbToby.collection('images').find({
+        let cursor = await dbToby.collection('images').find({
+            'Phone1-Value': phone
+            //            }, function (error, cursor) {
+        });
+        console.log("after find");
+        let item = await cursor.next();
+        console.log("findImage: ", item.imageURL);
+        return (item.imageURL);
+    }
+    else {
+        return ('');
+    }
+
+    //    const cursor = dbToby.collection("images").find({
+    //     'Phone1-Value': '15622608192'
+    // }).project({
+    //     imageURL: 1
+    // });
+    //  })
+
+
+
+    //console.log("findImage 3: ", found);
+    // if (cursor[0] === undefined) {
+
+    //     //    cursor.next(function (err, doc) {
+    //     //if (doc == null) {
+    //     console.log('findImage 3: no mongo image');
+    //     findImageCB('');
+    // } else {
+    //     console.log('findImage 4 cursor[0].imageURL: ', cursor[0].imageURL);
+    //     findImageCB(found.imageURL);
+    // }
+}
+
+module.exports.storeImage = function (phone, imageURL) {
+    console.log('storeImage: ', phone, imageURL);
+    const res = dbToby.collection("images").insertOne({
+        'Phone1-Value': phone,
+        'imageURL': imageURL
+    });
+}
 
 module.exports.queryDB = async function (asSearchAnd, asSearchOr) {
+    //let iSearches = 0;
     let asFound = [];
     return new Promise(async (resolve, reject) => {
         if (asSearchOr.length === 0) {
             // generates an error
             asSearchOr[0] = asSearchAnd[0];
         }
-        console.log(`Search ${iSearches++}: ${asSearchAnd} ::: ${asSearchOr}`);
+        //console.log(`Search ${iSearches++}: ${asSearchAnd} ::: ${asSearchOr}`);
         const cursor = dbToby.collection("contacts").find({
             GroupMembership: {
                 $all: asSearchAnd,
@@ -44,8 +95,10 @@ module.exports.queryDB = async function (asSearchAnd, asSearchOr) {
             GivenName: 1,
             FamilyName: 1,
             GroupMembership: 1,
-            'Phone1-Value': 1
+            'Phone1-Value': 1,
+            imageURL: 1
         });
+        //console.log ('queryDB cursor: ', cursor);
         cursor.each(function (err, item) {
             if (err) {
                 console.log("Cursor error: ", err);
@@ -55,7 +108,7 @@ module.exports.queryDB = async function (asSearchAnd, asSearchOr) {
                 console.log(`Last item. ${asFound.length} found.`);
                 resolve(asFound);
             }
-            //console.log(asFound);
+            //console.log(item);
             asFound.push(item);
         });
         console.log("end of queryDB - found: ", asFound.length);
@@ -86,7 +139,7 @@ function insertContactCallback(err, res) {
     //console.log("iCCB: ", rowCBCount);
     if (err) {
         console.log("iC err: ", err.name, err.message);
-        console.log ("iC err - not loaded", aoNotLoaded.length);
+        console.log("iC err - not loaded", aoNotLoaded.length);
         //console.log ("result: ", err);
     } else {
         if (res.result.nModified > 0) {
@@ -111,7 +164,7 @@ function insertContactCallback(err, res) {
     //if (!bRenderedContacts && (iRowCBCount >= iSavedCount - 2)) {
     if (bLast) {
         console.log("last callback");
-        console.log ("Not loaded: ", aoNotLoaded.length);
+        console.log("Not loaded: ", aoNotLoaded.length);
         dbStuff.writeFile(); // categories
         serverFns.sendSomething();
         bRenderedContacts = true;

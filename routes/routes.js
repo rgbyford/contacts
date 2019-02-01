@@ -238,33 +238,88 @@ router.post("/contacts/and", function (req, res) {
 
 let aoFoundPeople = [];
 
-router.post("/contacts/nameClicked", function (req, res) {
-    let person = aoFoundPeople[req.body.sId];
-    console.log ("aoFP: ", aoFoundPeople);
+router.post("/contacts/nameClicked", async function (req, res) {
+    //    resCB = res;
+    let personNum = req.body.sId;
+    let person = aoFoundPeople[personNum];
+    //let imageURL = "";
+    // console.log("aoFP: ", aoFoundPeople);
+    let picture = '';
     console.log("name clicked: ", req.body.sId);
-    console.log(person);
-    console.log("Phone: ", person['Phone1-Value']);
+    //console.log(person);
+    //console.log("Phone: ", person['Phone1-Value']);
     if (person['Phone1-Value'] === undefined) {
         person.Phone1 = "no phone number";
-    } else {
-        person.Phone1 = person['Phone1-Value'];
-    }
-    testFC(person.Phone1).then(function (picture) {
-        person.image = true;
-        person.picture = picture;
+        //person.picture = "";
+        person.image = false;
         aoFoundPeople[req.body.sId] = person;
         res.render("index", {
             search: true,
             asPrevSearch: asPrev,
-            aoFound: aoFoundPeople
-            });
+            aoFound: aoFoundPeople,
+        });
+    } else {
+        person.Phone1 = person['Phone1-Value'];
+        if ((imageURL = await dbConn.findImage(person.Phone1)) !== '') {
+            console.log("contacts/nameClicked: found mongo image:", imageURL);
+            person.image = true;
+            person.picture = imageURL;
+        } else {
+            console.log("contacts/nameClicked: no mongo image - going to FC");
+            person.image = false;
+            // go to FC for an image
+            picture = await askFC(person.Phone1);
+            if (picture !== "") {
+                console.log("fiCB - storing image in mongo");
+                await dbConn.storeImage(person.Phone1, picture);
+                person.image = true;
+                person.picture = picture;
+            }
+        }
+        aoFoundPeople[personNum] = person;
+        res.render("index", {
+            search: true,
+            asPrevSearch: asPrev,
+            aoFound: aoFoundPeople,
+            showImage: true
+        });
 
-        // res.render("index", {
-        //     search: true,
-        //     asPrevSearch: asPrev,
-        //     aoFound: aoFoundPeople,
-    });
+    }
 });
+
+// findImageCB = async function (imageURL) {
+//     let person = aoFoundPeople[personNum];
+//     if (imageURL === undefined || imageURL === "") {
+//         console.log("contacts/nameClicked: no mongo image");
+//         person.image = false;
+//         // go to FC for an image
+//         picture = await askFC(person.Phone1);
+//         if (picture !== "") {
+//             console.log ("fiCB - storing image in mongo");
+//             await dbConn.storeImage(person.Phone1, picture);
+//             person.image = true;
+//             person.picture = picture;
+//         }
+//         aoFoundPeople[personNum] = person;
+//         resCB.render("index", {
+//             search: true,
+//             asPrevSearch: asPrev,
+//             aoFound: aoFoundPeople,
+//             showImage: true
+//         });
+//     } else {
+//         console.log("contacts/nameClicked: found mongo image:", imageURL);
+//         person.image = true;
+//         person.picture = imageURL;
+//     }
+//     aoFoundPeople[personNum] = person;
+//     resCB.render("index", {
+//         search: true,
+//         asPrevSearch: asPrev,
+//         aoFound: aoFoundPeople,
+//         showImage: true
+//     });
+// }
 
 router.post("/contacts/search", async function (req, res) {
     setPrevious();
@@ -315,11 +370,12 @@ router.post("/contacts/search", async function (req, res) {
         aoFound[0].HowMany = aoFound.length;
         aoFoundPeople = aoFound;
         //        console.log("/contacts/search: ", aoFoundPeople);
-        // testFC(aoFound[0]['Phone1-Value']).then(function (picture) {
+        // askFC(aoFound[0]['Phone1-Value']).then(function (picture) {
         res.render("index", {
             search: true,
             asPrevSearch: asPrev,
-            aoFound: aoFound
+            aoFound: aoFound,
+            showImage: false
         });
         // });
     });
@@ -328,34 +384,14 @@ router.post("/contacts/search", async function (req, res) {
 
 let fc = require('../models/full-contact.js');
 
-async function testFC(sPhone) {
-    resolve = await fc.getContact(sPhone);
-    //    console.log("resolve: ", resolve);
-    //    .then(function (resolve, err) {
-    let img = {};
+async function askFC(sPhone) {
+    let resolve = await fc.getContact(sPhone);
+    console.log('resolve.avatar: ', resolve.avatar);
     if (resolve.status == 404) {
         console.log("no image");
-        img.src = "";
-        // var sorry = document.createElement("p");
-        // sorry.textContent = 'Sorry.  No image.';
-        // document.getElementById('picture').appendChild(sorry);
-    } else {
-        //var img = document.createElement("img");
-        console.log("found an image: ", resolve.avatar);
-        img.src = resolve.avatar;
-        img.id = "picture";
-        img.width = '150';
-        // $('#picture').appendChild(img);
-        // $('#picture').attr("style", "display:block");
+        resolve.avatar = "";
     }
-    // var phone = document.createElement("p");
-    // phone.textContent = sPhone;
-    // document.getElementById(id).appendChild(phone);
     return (resolve.avatar);
-    // .catch(function (err) {
-    //     console.log("FC error: ", err);
-    // });
-    // return (resolve.avator;
 }
 
 module.exports = router;

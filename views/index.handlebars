@@ -76,8 +76,12 @@
      <h3> Search results ({{this.HowMany}}): </h3>
     {{/if}}
     <p class="names" onclick='nameClick({{this.itemNum}})'>{{this.GivenName}} {{this.FamilyName}} {{this.Phone1}}</p>
+    {{#if this.Phone1}}
     {{#if this.image}}
     <img width="150px" height="auto" src="{{this.picture}}">
+    {{else}}
+    <p> No picture</p>
+    {{/if}}
     {{/if}}
     {{/each}}
     
