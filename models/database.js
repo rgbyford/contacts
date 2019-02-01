@@ -241,8 +241,8 @@ function importNames(iCount = 0) {
     return;
 }
 
-module.exports.printRows = function () {
-    return iRows;
-}
+// module.exports.printRows = function () {
+//     return iRows;
+// }
 module.exports.importNames = importNames;
 module.exports.aoContacts = aoContacts;

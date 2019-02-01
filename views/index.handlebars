@@ -76,8 +76,11 @@
      <h3> Search results ({{this.HowMany}}): </h3>
     {{/if}}
     <p class="names" onclick='nameClick({{this.itemNum}})'>{{this.GivenName}} {{this.FamilyName}} {{this.Phone1}}</p>
+    {{#if this.image}}
+    <img width="150px" height="auto" src="{{this.picture}}">
+    {{/if}}
     {{/each}}
-
+    
 </form>
 <form method="get" action="/searchPage">
     <button type="submit">Start over</button>

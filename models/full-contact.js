@@ -3,7 +3,7 @@ fetch = require("node-fetch");
 
 var apiKey = "hcyo5tkTZ3DscDXQurTlBlpUrTMhUpv1";
 
-function getContact(sPhone) {
+module.exports.getContact = function (sPhone) {
     return (new Promise(function (resolve, reject) {
         fetch("https://api.fullcontact.com/v3/person.enrich", {
             method: "POST",

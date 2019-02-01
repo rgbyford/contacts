@@ -240,6 +240,7 @@ let aoFoundPeople = [];
 
 router.post("/contacts/nameClicked", function (req, res) {
     let person = aoFoundPeople[req.body.sId];
+    console.log ("aoFP: ", aoFoundPeople);
     console.log("name clicked: ", req.body.sId);
     console.log(person);
     console.log("Phone: ", person['Phone1-Value']);
@@ -248,13 +249,21 @@ router.post("/contacts/nameClicked", function (req, res) {
     } else {
         person.Phone1 = person['Phone1-Value'];
     }
-    aoFoundPeople[req.body.sId] = person;
-    res.render("index", {
-        search: true,
-        asPrevSearch: asPrev,
-        aoFound: aoFoundPeople
-    });
+    testFC(person.Phone1).then(function (picture) {
+        person.image = true;
+        person.picture = picture;
+        aoFoundPeople[req.body.sId] = person;
+        res.render("index", {
+            search: true,
+            asPrevSearch: asPrev,
+            aoFound: aoFoundPeople
+            });
 
+        // res.render("index", {
+        //     search: true,
+        //     asPrevSearch: asPrev,
+        //     aoFound: aoFoundPeople,
+    });
 });
 
 router.post("/contacts/search", async function (req, res) {
@@ -306,14 +315,47 @@ router.post("/contacts/search", async function (req, res) {
         aoFound[0].HowMany = aoFound.length;
         aoFoundPeople = aoFound;
         //        console.log("/contacts/search: ", aoFoundPeople);
+        // testFC(aoFound[0]['Phone1-Value']).then(function (picture) {
         res.render("index", {
             search: true,
             asPrevSearch: asPrev,
             aoFound: aoFound
         });
+        // });
     });
     return;
 });
 
+let fc = require('../models/full-contact.js');
+
+async function testFC(sPhone) {
+    resolve = await fc.getContact(sPhone);
+    //    console.log("resolve: ", resolve);
+    //    .then(function (resolve, err) {
+    let img = {};
+    if (resolve.status == 404) {
+        console.log("no image");
+        img.src = "";
+        // var sorry = document.createElement("p");
+        // sorry.textContent = 'Sorry.  No image.';
+        // document.getElementById('picture').appendChild(sorry);
+    } else {
+        //var img = document.createElement("img");
+        console.log("found an image: ", resolve.avatar);
+        img.src = resolve.avatar;
+        img.id = "picture";
+        img.width = '150';
+        // $('#picture').appendChild(img);
+        // $('#picture').attr("style", "display:block");
+    }
+    // var phone = document.createElement("p");
+    // phone.textContent = sPhone;
+    // document.getElementById(id).appendChild(phone);
+    return (resolve.avatar);
+    // .catch(function (err) {
+    //     console.log("FC error: ", err);
+    // });
+    // return (resolve.avator;
+}
 
 module.exports = router;
