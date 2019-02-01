@@ -114,8 +114,9 @@ router.post("/contacts/select", function (req, res) {
     let asCats12 = [];
     let asCats13 = [];
     let asCats14 = [];
-    let bCats12Done = false;
     let bCats11Done = false;
+    let bCats12Done = false;
+    let bCats13Done = false;
     let sSearch;
     let bDone = (typeof (req.body.sValue) !== "string") && (req.body.sValue.length > 1);
     //console.log("req.body.sValue: ", req.body);
@@ -163,14 +164,15 @@ router.post("/contacts/select", function (req, res) {
             bCats12Done = true;
             break;
         case "cats13":
-            asValues[3] = req.body.asValues;
-            //console.log("sV13: ", asValues[3]);
+            asValues[3] = req.body.sValue;
+            console.log("sV13: ", asValues[3]);
             asCats11 = [asValues[1]];
             asCats12 = [asValues[2]];
             asCats13 = [asValues[3]];
             asCats14 = asCats.length > 2 ? asCats : [];
             bCats11Done = true;
             bCats12Done = true;
+            bCats13Done = true;
             asValues[4] = asCats14[0];
             break;
         case "cats14":
@@ -182,6 +184,7 @@ router.post("/contacts/select", function (req, res) {
             asCats14 = [asValues[4]];
             bCats11Done = true;
             bCats12Done = true;
+            bCats13Done = true;
             // asValues[5] = asCats15[0];
             break;
         default:
@@ -199,6 +202,7 @@ router.post("/contacts/select", function (req, res) {
         andBtnDisabled: bAndBtnDisabled,
         cats11Done: bCats11Done,
         cats12Done: bCats12Done,
+        cats13Done: bCats13Done,
         search: false
     });
     // } else {
@@ -326,8 +330,9 @@ router.post("/contacts/search", async function (req, res) {
     iAnds = -1;
     let asSearchAnd = [];
     let asSearchOr = [];
-
+    
     asPrev.forEach((sFind, index) => {
+        console.log("sFind: ", sFind);
         sFind = sFind.trim();
         let asFinds = sFind.split(" ");
         if (asFinds.length > 1) { //['x y']

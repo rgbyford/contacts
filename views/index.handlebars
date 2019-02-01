@@ -40,6 +40,9 @@
     <input class="selectdd" type='button' onclick='nextButton("cats12")' value='Next'>
     {{/if}}
     {{/if}}
+    {{#if cats13Done}}
+    <p>Sub-sub-category chosen: {{cats13}}</p>
+    {{else}}
     {{#if cats13}}
     <p> And a sub-sub-category:</p>
     <select class="selectdd" id="cats13" onchange="selectCat(this.id, this.value)">
@@ -47,6 +50,7 @@
         <option value='{{this}}'>{{this}}</option>
         {{/each}}
     </select>
+    {{/if}}
     {{/if}}
     {{#if cats14}}
     <select class="selectdd" id="cats14" onchange="selectCat(this.id, this.value)">
