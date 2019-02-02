@@ -14,16 +14,17 @@ let aasTagsMain = [
     ['pp', 'Prodigium'],
     ['coc', 'Cinema of Change'],
     ['dis', 'dis'],
-    ['ethn', 'Ethnicity'],
-    ['gender', 'gender'],
+    ['ethn', 'ethnicity'],
+    ['gend', 'gender'],
     ['intellectual', 'intellectual'],
     ['id', 'ideology'],
-    ['lang', 'Language spoken'],
-    ['loc', 'Location'],
-    ['net', 'Shared network'],
+    ['lang', 'language spoken'],
+    ['loc', 'location'],
+    ['net', 'shared network'],
     ['team', 'Prodigium worker'],
-    ['research', 'Researcher'],
-    ['sport', 'Sports pro']
+    ['research', 'researcher'],
+    ['sport', 'sports pro'],
+    ['queer', 'neither']
 ];
 
 let aoTagNames = [];

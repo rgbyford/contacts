@@ -1,3 +1,4 @@
+
 <div style="display:block; text-align: center;">
 <br>
 <!--
@@ -73,13 +74,13 @@
     {{#if @first}}
     <h3>Searched for: </h3>
     {{/if}}
-    <p>{{this}} {{#unless @last}}AND{{/unless}}</p>
+    <p style="margin-left: 30px;">{{this}} {{#unless @last}}AND{{/unless}}</p>
     {{/each}}
     {{#each aoFound}}
     {{#if @first}}
-     <h3> Search results ({{this.HowMany}}): </h3>
+     <h3> Search results ({{this.howMany}}): </h3>
     {{/if}}
-    <p class="names" onclick='nameClick({{this.itemNum}})'>{{this.GivenName}} {{this.FamilyName}} {{this.Phone1}}</p>
+    <p style="margin-left: 30px;" class="names" onclick='nameClick({{this.itemNum}})'>{{this.GivenName}} {{this.FamilyName}} {{this.Phone1}}</p>
     {{#if this.Phone1}}
     {{#if this.image}}
     <img width="150px" height="auto" src="{{this.picture}}">

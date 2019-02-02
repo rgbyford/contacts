@@ -366,13 +366,25 @@ router.post("/contacts/search", async function (req, res) {
     //console.log("/contacts/search: ", asSearchAnd, asSearchOr);
     dbConn.queryDB(asSearchAnd, asSearchOr).then(function (aoFound) {
         // mongo returns an extra null element on the end of the array
-        aoFound.length = aoFound.length - 1;
-        // don't ask why HowMany is done in such a weird way
+        // don't ask why howMany is done in such a weird way
         // handlebars wasn't coping with an extra variable
+        if (aoFound.length === undefined  || aoFound.length <= 1) {     // none found
+            aoFound.length = 0;
+            aoFound.push ({GivenName: "None", FamilyName: "found"});
+        //    aoFound.length = 1;
+            // aoFound[0].GivenName = "None";
+            // aoFound[0].FamilyName = "found";
+            aoFound[0].howMany = 0;    // don't count this one!
+        }
+        else {
+            aoFound.length = aoFound.length - 1;
+            aoFound[0].howMany = aoFound.length;
+        }
+        //console.log ("aoF length: ", aoFound.length);
+        //console.log ("aoFound: ", aoFound);
         for (let i = 0; i < aoFound.length; i++) {
             aoFound[i].itemNum = i;
         }
-        aoFound[0].HowMany = aoFound.length;
         aoFoundPeople = aoFound;
         //        console.log("/contacts/search: ", aoFoundPeople);
         // askFC(aoFound[0]['Phone1-Value']).then(function (picture) {
