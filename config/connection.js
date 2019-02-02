@@ -33,10 +33,8 @@ module.exports.findImage = async function (phone, findImageCB) {
     }).count();
     console.log("fI records: ", records);
     if (records > 0) {
-        //            await dbToby.collection('images').find({
         let cursor = await dbToby.collection('images').find({
             'Phone1-Value': phone
-            //            }, function (error, cursor) {
         });
         console.log("after find");
         let item = await cursor.next();
@@ -46,27 +44,6 @@ module.exports.findImage = async function (phone, findImageCB) {
     else {
         return ('');
     }
-
-    //    const cursor = dbToby.collection("images").find({
-    //     'Phone1-Value': '15622608192'
-    // }).project({
-    //     imageURL: 1
-    // });
-    //  })
-
-
-
-    //console.log("findImage 3: ", found);
-    // if (cursor[0] === undefined) {
-
-    //     //    cursor.next(function (err, doc) {
-    //     //if (doc == null) {
-    //     console.log('findImage 3: no mongo image');
-    //     findImageCB('');
-    // } else {
-    //     console.log('findImage 4 cursor[0].imageURL: ', cursor[0].imageURL);
-    //     findImageCB(found.imageURL);
-    // }
 }
 
 module.exports.storeImage = function (phone, imageURL) {
@@ -80,18 +57,38 @@ module.exports.storeImage = function (phone, imageURL) {
 module.exports.queryDB = async function (asSearchAnd, asSearchOr) {
     //let iSearches = 0;
     let asFound = [];
+    let oSearch = {
+        GroupMembership: {
+            $all: asSearchAnd,
+            $in: asSearchOr
+        }
+    }
     return new Promise(async (resolve, reject) => {
+        console.log (`typeof asSearchOr: ${typeof (asSearchOr)} length: ${asSearchOr.length} |${asSearchOr}|`);
         if (asSearchOr.length === 0) {
             // generates an error
-            asSearchOr[0] = asSearchAnd[0];
-        }
-        //console.log(`Search ${iSearches++}: ${asSearchAnd} ::: ${asSearchOr}`);
-        const cursor = dbToby.collection("contacts").find({
-            GroupMembership: {
-                $all: asSearchAnd,
-                $in: asSearchOr
+            console.log ("Empty OR search");
+            console.log (`typeof asSearchAnd: ${typeof (asSearchAnd)} length: ${asSearchAnd.length} |${asSearchAnd}|`);
+            if (asSearchAnd.length === 0) {
+                oSearch = {};
+                console.log ("Search any");
             }
-        }).project({
+            else {
+                asSearchOr[0] = asSearchAnd[0];
+            }
+        }
+        console.log(`Search: |${asSearchAnd}| ::: |${asSearchOr}|`);
+        console.log ("oSearch: ", oSearch);
+//        const cursor = dbToby.collection("contacts").find({})
+        const cursor = dbToby.collection("contacts").find(oSearch)
+        
+        // const cursor = dbToby.collection("contacts").find({
+        //     GroupMembership: {
+        //         $all: asSearchAnd,
+        //         $in: asSearchOr
+        //     }
+        // })
+        .project({
             GivenName: 1,
             FamilyName: 1,
             GroupMembership: 1,

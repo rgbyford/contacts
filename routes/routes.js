@@ -35,11 +35,12 @@ function renderContacts(res) {
 }
 
 router.get("/contacts", function (req, res) {
-    asPrev.forEach((element, i) => {
-        asPrev[i] = "";
-    });
+    asPrev.length = 0;
+    // asPrev.forEach((element, i) => {
+    //     asPrev[i] = "";
+    // });
     iAnds = -1;
-    console.log("get loadContacts");
+    console.log("get Contacts");
     renderContacts(res);
 });
 
@@ -212,7 +213,7 @@ router.post("/contacts/select", function (req, res) {
 });
 
 function setPrevious() {
-    //console.log("iAnds: ", iAnds);
+    console.log("iAnds: ", iAnds);
     iAnds++;
     if (iAnds === 0) {
         asPrev.length = 0;
@@ -220,14 +221,18 @@ function setPrevious() {
     asPrev[iAnds] = "";
     for (let i = 0; i < asValues.length; i++) {
         if (asValues[i] !== undefined) {
-            //console.log(`asV${i}: ${asValues[i]}`);
+            console.log(`asV${i}: ${asValues[i]}`);
             // let iTagPos = indexOfByKey(aoTagNames, 'sShortName', asValues[i]);
             // console.log ("iTP: ", iTagPos);
             // if (iTagPos >= 0) {
             //     asPrev[iAnds] = aoTagNames[iTagPos].sLongName + ' ';
             //     console.log ("sP: ", asPrev[iAnds]);            
             // } else {
-            asPrev[iAnds] += asValues[i] + " ";
+            if ((asPrev[iAnds].length > 0) && (asValues[i] !== '')) {
+                console.log(`i ${i}, asPrev[i].length ${asPrev[iAnds].length}, ${asValues[i]}, adding |`);
+                asPrev[iAnds] += '|';
+            }
+            asPrev[iAnds] += asValues[i];
             //     console.log ("sP failed");
             // }
         }
@@ -291,50 +296,19 @@ router.post("/contacts/nameClicked", async function (req, res) {
     }
 });
 
-// findImageCB = async function (imageURL) {
-//     let person = aoFoundPeople[personNum];
-//     if (imageURL === undefined || imageURL === "") {
-//         console.log("contacts/nameClicked: no mongo image");
-//         person.image = false;
-//         // go to FC for an image
-//         picture = await askFC(person.Phone1);
-//         if (picture !== "") {
-//             console.log ("fiCB - storing image in mongo");
-//             await dbConn.storeImage(person.Phone1, picture);
-//             person.image = true;
-//             person.picture = picture;
-//         }
-//         aoFoundPeople[personNum] = person;
-//         resCB.render("index", {
-//             search: true,
-//             asPrevSearch: asPrev,
-//             aoFound: aoFoundPeople,
-//             showImage: true
-//         });
-//     } else {
-//         console.log("contacts/nameClicked: found mongo image:", imageURL);
-//         person.image = true;
-//         person.picture = imageURL;
-//     }
-//     aoFoundPeople[personNum] = person;
-//     resCB.render("index", {
-//         search: true,
-//         asPrevSearch: asPrev,
-//         aoFound: aoFoundPeople,
-//         showImage: true
-//     });
-// }
-
 router.post("/contacts/search", async function (req, res) {
     setPrevious();
     iAnds = -1;
     let asSearchAnd = [];
     let asSearchOr = [];
-    
+
     asPrev.forEach((sFind, index) => {
         console.log("sFind: ", sFind);
         sFind = sFind.trim();
-        let asFinds = sFind.split(" ");
+        console.log(`sFind trimmed: *${sFind}*`);
+        let asFinds = sFind.split("|");
+        console.log(`asFinds: ${asFinds}`);
+        //console.log(`asFinds.length ${asFinds.length}`);
         if (asFinds.length > 1) { //['x y']
             asFinds.forEach((sCat, j) => {
                 let asFindCommas = sCat.split(",");
@@ -345,12 +319,16 @@ router.post("/contacts/search", async function (req, res) {
                     });
                 } else {
                     if (sCat !== "any") {
+                        //console.log(`pushing and 1: ${sCaT}`);
                         asSearchAnd.push(sCat);
                     }
                 }
             });
         } else {
-            asSearchAnd.push(asFinds[0]);
+            if (asFinds[0].length) {
+                //console.log(`pushing and 2: |${asFinds[0]}|`);
+                asSearchAnd.push(asFinds[0]);
+            }
         }
     });
     // try splitting each sub-array by ','
@@ -368,15 +346,17 @@ router.post("/contacts/search", async function (req, res) {
         // mongo returns an extra null element on the end of the array
         // don't ask why howMany is done in such a weird way
         // handlebars wasn't coping with an extra variable
-        if (aoFound.length === undefined  || aoFound.length <= 1) {     // none found
+        if (aoFound.length === undefined || aoFound.length <= 1) { // none found
             aoFound.length = 0;
-            aoFound.push ({GivenName: "None", FamilyName: "found"});
-        //    aoFound.length = 1;
+            aoFound.push({
+                GivenName: "None",
+                FamilyName: "found"
+            });
+            //    aoFound.length = 1;
             // aoFound[0].GivenName = "None";
             // aoFound[0].FamilyName = "found";
-            aoFound[0].howMany = 0;    // don't count this one!
-        }
-        else {
+            aoFound[0].howMany = 0; // don't count this one!
+        } else {
             aoFound.length = aoFound.length - 1;
             aoFound[0].howMany = aoFound.length;
         }
