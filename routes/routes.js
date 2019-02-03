@@ -7,7 +7,7 @@ let aoCats = [{}];
 let asPrev = [];
 let iAnds = -1;
 let bAndBtnDisabled = false;
-
+let bClearedDB = false;
 
 function renderContacts(res) {
     let asCatStrings = [];
@@ -45,20 +45,22 @@ router.get("/contacts", function (req, res) {
 });
 
 router.get("/loaded", function (req, res) {
-    let aoNotLoaded = [];
-    aoNotLoaded = dbConn.getNotLoaded();
-    console.log("get loaded");
-    console.log("aoNL length", aoNotLoaded.length);
-    console.log("aoNL[0]: ", aoNotLoaded[0]);
+    let aoModified = [];
+    aoModified = dbConn.getModified();
+    let iModified = aoModified.length;
+    console.log("get Modified");
+    console.log("aoM length", aoModified.length);
+//    console.log("aoNL[0]: ", aoModified[0]);
     res.render("loaded", {
-        iNotLoaded: aoNotLoaded.length,
-        aoNotLoaded: aoNotLoaded
+        bClearedDB: bClearedDB,
+        iLoaded: dbConn.getLoaded(),
+        iModified: aoModified.length,
+        aoModified: aoModified
     });
 });
 
 router.get("/loadContacts", function (req, res) {
-    console.log("glC - cleared aoNL");
-    dbConn.clearNotLoaded();
+    dbConn.prepLoad();
     console.log("get contacts");
     res.render("loadContacts", {});
 });
@@ -93,9 +95,11 @@ router.put("/contacts/import", uploadMulter.single("avatar"), async function (re
     // res.render("loadcontacts", {
     //     loading: true
     // });
+    bClearedDB = false;
     console.log("/contacts/import req body: ", req.body);
     if (req.body.clearDB === 'on') {
         await dbConn.clearDB();
+        bClearedDB = true;
         // empty the database collection
     }
     if (req.body.clearCats === 'on') {
@@ -103,7 +107,7 @@ router.put("/contacts/import", uploadMulter.single("avatar"), async function (re
         // erase the categories file
     }
 
-    cjFns.csvJson(req.file.filename); // needs to return a not loaded list
+    cjFns.csvJson(req.file.filename); // needs to return a not Modified list
 });
 
 let asValues = [];
@@ -213,7 +217,7 @@ router.post("/contacts/select", function (req, res) {
 });
 
 function setPrevious() {
-    console.log("iAnds: ", iAnds);
+    //console.log("iAnds: ", iAnds);
     iAnds++;
     if (iAnds === 0) {
         asPrev.length = 0;
@@ -221,7 +225,7 @@ function setPrevious() {
     asPrev[iAnds] = "";
     for (let i = 0; i < asValues.length; i++) {
         if (asValues[i] !== undefined) {
-            console.log(`asV${i}: ${asValues[i]}`);
+            //console.log(`asV${i}: ${asValues[i]}`);
             // let iTagPos = indexOfByKey(aoTagNames, 'sShortName', asValues[i]);
             // console.log ("iTP: ", iTagPos);
             // if (iTagPos >= 0) {
@@ -229,7 +233,7 @@ function setPrevious() {
             //     console.log ("sP: ", asPrev[iAnds]);            
             // } else {
             if ((asPrev[iAnds].length > 0) && (asValues[i] !== '')) {
-                console.log(`i ${i}, asPrev[i].length ${asPrev[iAnds].length}, ${asValues[i]}, adding |`);
+                //console.log(`i ${i}, asPrev[i].length ${asPrev[iAnds].length}, ${asValues[i]}, adding |`);
                 asPrev[iAnds] += '|';
             }
             asPrev[iAnds] += asValues[i];
@@ -303,11 +307,11 @@ router.post("/contacts/search", async function (req, res) {
     let asSearchOr = [];
 
     asPrev.forEach((sFind, index) => {
-        console.log("sFind: ", sFind);
+        //console.log("sFind: ", sFind);
         sFind = sFind.trim();
-        console.log(`sFind trimmed: *${sFind}*`);
+        //console.log(`sFind trimmed: *${sFind}*`);
         let asFinds = sFind.split("|");
-        console.log(`asFinds: ${asFinds}`);
+        //console.log(`asFinds: ${asFinds}`);
         //console.log(`asFinds.length ${asFinds.length}`);
         if (asFinds.length > 1) { //['x y']
             asFinds.forEach((sCat, j) => {
@@ -330,6 +334,9 @@ router.post("/contacts/search", async function (req, res) {
                 asSearchAnd.push(asFinds[0]);
             }
         }
+        // replace , with OR 
+        asPrev[index] = asPrev[index].replace(/\|/g, " | ");
+        asPrev[index] = asPrev[index].replace(/,/g, " OR ");
     });
     // try splitting each sub-array by ','
     // search is <first element> AND <second element>

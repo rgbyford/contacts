@@ -61,7 +61,7 @@
     </select>
     {{/if}}
     <input class="selectdd" type='button' {{#if andBtnDisabled}} disabled{{/if}} onclick='andButton()' value='AND' id='and'>
-    <input class="selectdd" type='button' onclick='searchButton()' value='Search' id='search'>
+    <input class="selectdd" type='button' {{#if andBtnDisabled}} disabled{{/if}} onclick='searchButton()' value='Search' id='search'>
     {{#if search}}
     <p>Searching:</p>
     {{#each asPrev}}

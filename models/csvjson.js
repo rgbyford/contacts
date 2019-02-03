@@ -14,7 +14,7 @@ function CJDone(results) {
 function CJRow(results) {
 //    document.body.style.cursor  = 'wait';
     index++;
-    dbStuff.aoContacts.push(results.data);
+    dbStuff.pushContact(results.data);
 }
 
 var myConfig = {

@@ -5,6 +5,8 @@ const dbName = "toby";
 let dbToby;
 const url = "mongodb://localhost:27017";
 const routes = require("../routes/routes");
+const dbFns = require('../models/database');
+
 // Connect using MongoClient
 MongoClient.connect(url, function (err, client) {
     if (err) {
@@ -68,7 +70,7 @@ module.exports.queryDB = async function (asSearchAnd, asSearchOr) {
         if (asSearchOr.length === 0) {
             // generates an error
             console.log ("Empty OR search");
-            console.log (`typeof asSearchAnd: ${typeof (asSearchAnd)} length: ${asSearchAnd.length} |${asSearchAnd}|`);
+            //console.log (`typeof asSearchAnd: ${typeof (asSearchAnd)} length: ${asSearchAnd.length} |${asSearchAnd}|`);
             if (asSearchAnd.length === 0) {
                 oSearch = {};
                 console.log ("Search any");
@@ -77,8 +79,8 @@ module.exports.queryDB = async function (asSearchAnd, asSearchOr) {
                 asSearchOr[0] = asSearchAnd[0];
             }
         }
-        console.log(`Search: |${asSearchAnd}| ::: |${asSearchOr}|`);
-        console.log ("oSearch: ", oSearch);
+        console.log(`SearchAnd: *${asSearchAnd}* searchOr: *${asSearchOr}*`);
+//        console.log ("oSearch: ", oSearch);
 //        const cursor = dbToby.collection("contacts").find({})
         const cursor = dbToby.collection("contacts").find(oSearch)
         
@@ -112,62 +114,81 @@ module.exports.queryDB = async function (asSearchAnd, asSearchOr) {
     });
 };
 
+const serverFns = require('../contacts.js');
+let iRowsCBCount = 0;
+let dbStuff = require("../models/database.js");
+let oContactSaved;
+let aoModified = [];
+let bLast;
+let iRowsResultBad;
+let iModified = 0;;
+let iRowsNBad;
+
 module.exports.getSaved = function async () {
     return (adminDb.contacts.find());
 };
 
-module.exports.getNotLoaded = function () {
-    return (aoNotLoaded);
+module.exports.getModified = function () {
+    return (aoModified);
 };
 
-module.exports.clearNotLoaded = function () {
-    aoNotLoaded.length = 0;
+module.exports.clearModified = function () {
+    aoModified.length = 0;
     return;
 };
 
-const serverFns = require('../contacts.js');
-let iRowCBCount = 0;
-let dbStuff = require("../models/database.js");
-let oContactSaved;
-let aoNotLoaded = [];
-let bLast;
+module.exports.getLoaded = function () {
+    return (iRowsCBCount);
+};
+
+module.exports.prepLoad = function () {
+    dbFns.clearContacts();
+    iRowsCBCount = 0;
+    iModified = 0;
+    aoModified.length = 0;
+}
 
 function insertContactCallback(err, res) {
     //console.log("iCCB: ", rowCBCount);
     if (err) {
         console.log("iC err: ", err.name, err.message);
-        console.log("iC err - not loaded", aoNotLoaded.length);
+        console.log("iC err - not loaded", aoModified.length);
         //console.log ("result: ", err);
     } else {
         if (res.result.nModified > 0) {
-            console.log(`nM > 0: ${iRowCBCount}: ${res.result.n} ${res.result.nModified} ${res.result.ok}`);
+            console.log(`nM > 0: ${iRowsCBCount}: ${res.result.n} ${res.result.nModified} ${res.result.ok}`);
             console.log(`${oContactSaved.GivenName} ${oContactSaved.FamilyName}`);
-            aoNotLoaded.push(oContactSaved);
+            aoModified.push(oContactSaved);
+            iModified++;
         }
         if (res.result.n !== 1) {
-            console.log(`nR != 1: ${iRowCBCount}: ${res.result.n} ${res.result.nModified} ${res.result.ok}`);
+            console.log(`nR != 1: ${iRowsCBCount}: ${res.result.n} ${res.result.nModified} ${res.result.ok}`);
             //console.log("rowCBCount: ", rowCBCount);
             //    console.log("Rows: ", rowCount);
+            iRowsNBad++;
         }
         if (res.result.ok !== 1) {
-            console.log(`ok != 1: ${iRowCBCount}: ${res.result.n} ${res.result.nModified} ${res.result.ok}`);
+            console.log(`ok != 1: ${iRowsCBCount}: ${res.result.n} ${res.result.nModified} ${res.result.ok}`);
             //console.log("rowCBCount: ", rowCBCount);
             //    console.log("Rows: ", rowCount);
+            iRowsResultBad++;
         }
-        iRowCBCount++;
+        iRowsCBCount++;
         dbStuff.importNames(); // recursive call for next row
         //console.log("iC result: ", ++iCC, res.result);
     }
-    //if (!bRenderedContacts && (iRowCBCount >= iSavedCount - 2)) {
+    //if (!bRenderedContacts && (iRowsCBCount >= iSavedCount - 2)) {
     if (bLast) {
         console.log("last callback");
-        console.log("Not loaded: ", aoNotLoaded.length);
+        console.log("Not loaded: ", aoModified.length);
+        console.log("RowsNBad", iRowsNBad);
+        console.log("iRowsResultBad", iRowsResultBad);
         dbStuff.writeFile(); // categories
         serverFns.sendSomething();
         bRenderedContacts = true;
         bLast = false;
     }
-    //    console.log ("Rows: ", iSavedCount, iRowCBCount);
+    //    console.log ("Rows: ", iSavedCount, iRowsCBCount);
     return;
 }
 

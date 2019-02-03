@@ -113,6 +113,14 @@ module.exports.findSubCats = function (sCat) {
     }
 };
 
+module.exports.clearContacts = function() {
+    aoContacts.length = 0;
+};
+
+module.exports.pushContact = function (oContact) {
+    aoContacts.push (oContact);
+}
+
 var arrayUnique = function (arr) {
     return arr.filter(function (item, index) {
         return arr.indexOf(item) >= index;
@@ -172,7 +180,7 @@ let iRows = 0;
 let aoContacts = [];
 let iSavedCount;
 
-function importNames(iCount = 0) {
+module.exports.importNames = function (iCount = 0) {
     if (iCount) {
         iSavedCount = iCount;
     }
@@ -237,13 +245,8 @@ function importNames(iCount = 0) {
 
     // now put it into the database
     aoContacts.shift(); // remove the one used
+    //console.log ("aoC length: ", aoContacts.length);
     connFns.insertContact(oContact, aoContacts.length === 0); // iCount 0 except for first call
     iRows++;
     return;
 }
-
-// module.exports.printRows = function () {
-//     return iRows;
-// }
-module.exports.importNames = importNames;
-module.exports.aoContacts = aoContacts;

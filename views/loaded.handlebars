@@ -3,8 +3,10 @@ table, th, td {
   border: 1px solid black;
 }
 </style>
-{{#if iNotLoaded}}
-<h2>These {{iNotLoaded}} didn't load:</h2>
+<h2>Contacts processed: {{iLoaded}}</h2>
+{{#if bClearedDB}}
+{{#if iModified}}
+<h2>Near-duplicates: {{iModified}}</h2>
 <form>
 <table style="width: 600px">
 <tr>
@@ -12,7 +14,7 @@ table, th, td {
     <th>Family Name</th>
     <th>Email</th>
 </tr>
-    {{#each aoNotLoaded}}
+    {{#each aoModified}}
     <tr>
         <td>{{this.GivenName}}</td>
         <td>{{this.FamilyName}}</td>
@@ -22,7 +24,9 @@ table, th, td {
 </table>
 </form>
 {{else}}
-<h2> All loaded!</h2>
+{{/if}}
+{{else}}
+<h2>Modified: {{iModified}}:</h2>
 {{/if}}
 <br>
 <form method="get" action="/searchPage">
