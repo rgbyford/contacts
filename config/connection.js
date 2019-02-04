@@ -129,6 +129,7 @@ module.exports.getSaved = function async () {
 };
 
 module.exports.getModified = function () {
+    console.log ("gM: ", aoModified.length);
     return (aoModified);
 };
 
@@ -180,7 +181,7 @@ function insertContactCallback(err, res) {
     //if (!bRenderedContacts && (iRowsCBCount >= iSavedCount - 2)) {
     if (bLast) {
         console.log("last callback");
-        console.log("Not loaded: ", aoModified.length);
+        console.log("Modified: ", aoModified.length);
         console.log("RowsNBad", iRowsNBad);
         console.log("iRowsResultBad", iRowsResultBad);
         dbStuff.writeFile(); // categories
